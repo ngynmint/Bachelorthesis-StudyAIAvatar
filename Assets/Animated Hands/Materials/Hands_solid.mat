@@ -27,7 +27,6 @@ Material:
   m_ValidKeywords:
   - _EMISSION
   - _GLOSSINESS_FROM_BASE_ALPHA
-  - _NORMALMAP
   - _SPECULAR_COLOR
   m_InvalidKeywords: []
   m_LightmapFlags: 6
