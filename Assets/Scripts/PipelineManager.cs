@@ -9,8 +9,11 @@ public class PipelineManager : MonoBehaviour
     [Header("Komponenten")]
     public MicrophoneRecorder recorder;
     public AudioSource avatarAudioSource;
+    public SessionLogger sessionLogger;
 
     private WebSocket websocket;
+    private string lastUserText = "";
+    private float lastRecordingDuration = 0f;
 
     async void Start()
     {
@@ -23,17 +26,23 @@ public class PipelineManager : MonoBehaviour
         websocket.OnClose += (e) => Debug.Log("Connection closed");
 
         bool waitingForText = true;
+        string pendingAiText = "";
+
         websocket.OnMessage += (bytes) =>
         {
             if (waitingForText)
             {
                 string json = System.Text.Encoding.UTF8.GetString(bytes);
                 var response = JsonUtility.FromJson<AIResponse>(json);
+                pendingAiText = response.text;
+                lastUserText = response.stt_text; // ← hinzufügen
                 Debug.Log($"KI Text: {response.text}");
+                Debug.Log($"User Text: {response.stt_text}");
                 waitingForText = false;
             }
             else
             {
+                sessionLogger.LogTurn(lastUserText, lastRecordingDuration, pendingAiText);
                 StartCoroutine(PlayAudio(bytes));
                 waitingForText = true;
             }
@@ -46,15 +55,20 @@ public class PipelineManager : MonoBehaviour
     {
         if (websocket.State != WebSocketState.Open) return;
 
-        Debug.Log($"Send Audio: {clip.samples} samples, {clip.channels} channels, {clip.frequency}Hz");
+        string name = clip.name;
+        if (name.Contains("duration="))
+        {
+            string durationStr = name.Split(new string[]{"duration="}, System.StringSplitOptions.None)[1];
+            float.TryParse(durationStr, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out lastRecordingDuration);
+        }
 
+        Debug.Log($"Send Audio: {clip.samples} samples, {clip.channels} channels, {clip.frequency}Hz");
 
         float[] samples = new float[clip.samples * clip.channels];
         clip.GetData(samples, 0);
 
-
         byte[] wavBytes = FloatsToWav(samples, clip.channels, clip.frequency);
-
         await websocket.Send(wavBytes);
         Debug.Log($"Audio sent! {wavBytes.Length} bytes");
     }
@@ -62,8 +76,6 @@ public class PipelineManager : MonoBehaviour
     private byte[] FloatsToWav(float[] samples, int channels, int frequency)
     {
         byte[] wav = new byte[44 + samples.Length * 2];
-
-        // RIFF Header
         System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes("RIFF"), 0, wav, 0, 4);
         System.BitConverter.GetBytes(wav.Length - 8).CopyTo(wav, 4);
         System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes("WAVE"), 0, wav, 8, 4);
@@ -77,8 +89,6 @@ public class PipelineManager : MonoBehaviour
         System.BitConverter.GetBytes((short)16).CopyTo(wav, 34);
         System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes("data"), 0, wav, 36, 4);
         System.BitConverter.GetBytes(samples.Length * 2).CopyTo(wav, 40);
-
-        // Audio Data
         int offset = 44;
         foreach (float s in samples)
         {
@@ -86,58 +96,52 @@ public class PipelineManager : MonoBehaviour
             System.BitConverter.GetBytes(val).CopyTo(wav, offset);
             offset += 2;
         }
-
         return wav;
     }
 
     private IEnumerator PlayAudio(byte[] wavBytes)
     {
         float[] samples = WavToFloats(wavBytes, out int channels, out int frequency);
-
-        AudioClip clip = AudioClip.Create("AI_Response", 
+        AudioClip clip = AudioClip.Create("AI_Response",
             samples.Length / channels, channels, frequency, false);
         clip.SetData(samples, 0);
-
         avatarAudioSource.clip = clip;
         avatarAudioSource.Play();
-
-        yield return null;
+        yield return new WaitForSeconds(clip.length);
     }
 
     private float[] WavToFloats(byte[] wav, out int channels, out int frequency)
     {
         channels = System.BitConverter.ToInt16(wav, 22);
         frequency = System.BitConverter.ToInt32(wav, 24);
-
         int dataStart = 44;
         int sampleCount = (wav.Length - dataStart) / 2;
         float[] samples = new float[sampleCount];
-
         for (int i = 0; i < sampleCount; i++)
         {
             short s = System.BitConverter.ToInt16(wav, dataStart + i * 2);
             samples[i] = s / 32768f;
         }
-
         return samples;
     }
 
     void Update()
     {
-    #if !UNITY_WEBGL || UNITY_EDITOR
-            websocket?.DispatchMessageQueue();
-    #endif
+        #if !UNITY_WEBGL || UNITY_EDITOR
+        websocket?.DispatchMessageQueue();
+        #endif
     }
 
     async void OnDestroy()
     {
         await websocket?.Close();
     }
-    
+
     [System.Serializable]
     private class AIResponse
     {
-    public string text;
-    public string error;
-    }   
+        public string text;
+        public string error;
+        public string stt_text; 
+    }
 }

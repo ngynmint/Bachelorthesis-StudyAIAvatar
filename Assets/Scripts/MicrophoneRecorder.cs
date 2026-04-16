@@ -10,6 +10,7 @@ public class MicrophoneRecorder : MonoBehaviour
     private bool isRecording = false;
     private int sampleRate = 44100;
     private int maxRecordingSeconds = 60;
+    private float recordingStartTime;
 
     private const string HEADSET_MIC = "Headset Microphone (Oculus Virtual Audio Device)";
     private string activeMic => HEADSET_MIC;
@@ -34,6 +35,7 @@ public class MicrophoneRecorder : MonoBehaviour
     {
         if (isRecording) return;
         isRecording = true;
+        recordingStartTime = Time.time;
         recordedClip = Microphone.Start(activeMic, false, maxRecordingSeconds, sampleRate);
         Debug.Log($"Recording started ({activeMic})");
     }
@@ -52,52 +54,7 @@ public class MicrophoneRecorder : MonoBehaviour
             return;
         }
 
-        float[] samples = new float[lastSample * recordedClip.channels];
-        recordedClip.GetData(samples, 0);
-
-        AudioClip trimmed = AudioClip.Create("recorded", lastSample,
-            recordedClip.channels, sampleRate, false);
-        trimmed.SetData(samples, 0);
-        recordedClip = trimmed;
-
-        Debug.Log($"Recording stopped: {lastSample / (float)sampleRate:F1}s");
-        OnAudioReady?.Invoke(recordedClip);
-    }
-
-
-    /* Test ohneheadset
-    private const string LAPTOP_MIC = "Mikrofonarray (Realtek(R) Audio)";
-    private string testMic => LAPTOP_MIC;
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-            StartTestRecording();
-        if (Input.GetKeyUp(KeyCode.Space))
-            StopTestRecording();
-    }
-
-    private void StartTestRecording()
-    {
-        if (isRecording) return;
-        isRecording = true;
-        recordedClip = Microphone.Start(testMic, false, maxRecordingSeconds, sampleRate);
-        Debug.Log($"Test Recording started ({testMic})");
-    }
-
-    private void StopTestRecording()
-    {
-        if (!isRecording) return;
-        isRecording = false;
-
-        int lastSample = Microphone.GetPosition(testMic);
-        Microphone.End(testMic);
-
-        if (lastSample <= 0)
-        {
-            Debug.LogWarning("No Audio recorded");
-            return;
-        }
+        float duration = Time.time - recordingStartTime;
 
         float[] samples = new float[lastSample * recordedClip.channels];
         recordedClip.GetData(samples, 0);
@@ -106,9 +63,9 @@ public class MicrophoneRecorder : MonoBehaviour
             recordedClip.channels, sampleRate, false);
         trimmed.SetData(samples, 0);
         recordedClip = trimmed;
+        recordedClip.name = $"recorded|duration={duration:F2}";
 
-        Debug.Log($"Test Recording stopped: {lastSample / (float)sampleRate:F1}s");
+        Debug.Log($"Recording stopped: {duration:F1}s");
         OnAudioReady?.Invoke(recordedClip);
     }
-    */
 }

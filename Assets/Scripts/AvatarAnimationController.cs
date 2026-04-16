@@ -18,7 +18,6 @@ public class AvatarAnimationController : MonoBehaviour
         else if (!audioPlaying && isTalking)
             StopTalking();
 
-        // Log only when state changes (not every frame)
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         string currentState = "UNKNOWN";
         if (stateInfo.IsName("Idle")) currentState = "IDLE";
@@ -30,21 +29,23 @@ public class AvatarAnimationController : MonoBehaviour
             Debug.Log($"[Anim] Switched to: {currentState}");
             lastLoggedState = currentState;
         }
+        Debug.Log($"isPlaying: {avatarAudioSource.isPlaying}, isTalking: {isTalking}");
     }
 
     private void StartTalking()
     {
         isTalking = true;
         bool useTalking2 = Random.value > 0.5f;
-        animator.SetBool("UseTalking2", useTalking2);
+        animator.SetBool("UserTalking", useTalking2);
         animator.SetBool("IsTalking", true);
-        Debug.Log($"[Anim] StartTalking → UseTalking2={useTalking2}");
+        Debug.Log($"[Anim] StartTalking → UserTalking={useTalking2}");
     }
 
     private void StopTalking()
     {
         isTalking = false;
         animator.SetBool("IsTalking", false);
+        animator.SetBool("UserTalking", false);
         Debug.Log("[Anim] StopTalking");
     }
 }
