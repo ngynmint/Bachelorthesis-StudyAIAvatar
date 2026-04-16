@@ -17,7 +17,10 @@ public class PipelineManager : MonoBehaviour
 
     async void Start()
     {
-        recorder.OnAudioReady += SendAudioToServer;
+        recorder.OnAudioReady += (clip, duration) => {
+        lastRecordingDuration = duration;
+        SendAudioToServer(clip);
+        };  
 
         websocket = new WebSocket("ws://localhost:8765");
 
@@ -36,7 +39,7 @@ public class PipelineManager : MonoBehaviour
                 var response = JsonUtility.FromJson<AIResponse>(json);
                 pendingAiText = response.text;
                 lastUserText = response.stt_text; // ← hinzufügen
-                Debug.Log($"KI Text: {response.text}");
+                Debug.Log($"AI Text: {response.text}");
                 Debug.Log($"User Text: {response.stt_text}");
                 waitingForText = false;
             }

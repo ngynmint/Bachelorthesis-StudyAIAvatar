@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class MicrophoneRecorder : MonoBehaviour
 {
-    public System.Action<AudioClip> OnAudioReady;
+    public System.Action<AudioClip, float> OnAudioReady;
 
     private AudioClip recordedClip;
     private bool isRecording = false;
@@ -63,9 +63,8 @@ public class MicrophoneRecorder : MonoBehaviour
             recordedClip.channels, sampleRate, false);
         trimmed.SetData(samples, 0);
         recordedClip = trimmed;
-        recordedClip.name = $"recorded|duration={duration:F2}";
 
         Debug.Log($"Recording stopped: {duration:F1}s");
-        OnAudioReady?.Invoke(recordedClip);
+        OnAudioReady?.Invoke(recordedClip, duration);
     }
 }

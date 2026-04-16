@@ -9,7 +9,7 @@ public class SessionLogger : MonoBehaviour
 
     void Awake()
     {
-        string logDir = Path.Combine(Application.persistentDataPath, "Logger");
+        string logDir = Path.Combine(Application.dataPath, "Logger");
         Directory.CreateDirectory(logDir);
         
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -22,10 +22,10 @@ public class SessionLogger : MonoBehaviour
     public void LogTurn(string userText, float recordingDuration, string aiResponse)
     {
         turnIndex++;
-        string entry = $"--- Turn {turnIndex} ---\n" +
-                       $"User: {userText}\n" +
-                       $"Explanation Length: {recordingDuration:F1} sec\n" +
-                       $"AI Response: {aiResponse}\n\n";
+        string entry = $"Interaction {turnIndex}:\n" +
+                    $"User: {userText}\n" +
+                    $"Explanation Length: {recordingDuration:F1} sec\n" +
+                    $"AI Response: {aiResponse}\n\n";
         
         File.AppendAllText(logFilePath, entry);
         Debug.Log($"[Logger] Turn {turnIndex} logged");
