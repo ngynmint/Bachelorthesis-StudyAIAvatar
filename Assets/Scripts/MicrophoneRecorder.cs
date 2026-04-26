@@ -11,6 +11,8 @@ public class MicrophoneRecorder : MonoBehaviour
     private int sampleRate = 44100;
     private int maxRecordingSeconds = 60;
     private float recordingStartTime;
+    public System.Action OnRecordingStarted;
+    public System.Action OnRecordingStopped;
 
     private const string HEADSET_MIC = "Headset Microphone (Oculus Virtual Audio Device)";
     private string activeMic => HEADSET_MIC;
@@ -37,6 +39,10 @@ public class MicrophoneRecorder : MonoBehaviour
         isRecording = true;
         recordingStartTime = Time.time;
         recordedClip = Microphone.Start(activeMic, false, maxRecordingSeconds, sampleRate);
+        if (OnRecordingStarted != null)
+        {
+            OnRecordingStarted();
+        }
         Debug.Log($"Recording started ({activeMic})");
     }
 
@@ -63,6 +69,10 @@ public class MicrophoneRecorder : MonoBehaviour
             recordedClip.channels, sampleRate, false);
         trimmed.SetData(samples, 0);
         recordedClip = trimmed;
+        if (OnRecordingStopped != null)
+        {
+            OnRecordingStopped();
+        }
 
         Debug.Log($"Recording stopped: {duration:F1}s");
         OnAudioReady?.Invoke(recordedClip, duration);

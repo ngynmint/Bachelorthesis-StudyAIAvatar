@@ -1,0 +1,18 @@
+[0 ms] Session Start: 2026-04-22 19:06:06.319
+Participant ID:  
+Variable Tested:  
+
+Interaction 1:
+[11105 ms] User:  Hi, what's up? My name is Pinty, what's your name? Are you ready to learn about chlorophylls today?
+[25321 ms] AI Response: Hi Pinty! Nice to meet you! My name is Jamie, and yeah, I'm super excited to learn about chlorophylls with you! I've been studying plant biology in school, but I feel like I still have some gaps in my knowledge. So, what's the scoop on chlorophyll? Is it just a pigment that helps plants photosynthesize or is there more to it?
+Gaze at Avatar (Explanation): 0 ms, 0% of 8,3s
+Gaze at Avatar (AI Response): 0 ms, 0% of 20,1s
+
+Interaction 2:
+[55673 ms] User:  Let's start super simple. Chlorophyll is what makes the plants look green, right? Or am I right?
+[72291 ms] AI Response: That's partially correct! Chlorophyll is actually responsible for absorbing light energy from the sun, which is necessary for photosynthesis. The green color is just a byproduct of that process.
+
+So, to be more precise, chlorophyll makes plants look green because it absorbs blue and red light, but reflects green light. Does that make sense?
+Gaze at Avatar (Explanation): 0 ms, 0% of 9,2s
+Gaze at Avatar (AI Response): 0 ms, 0% of 21,2s
+

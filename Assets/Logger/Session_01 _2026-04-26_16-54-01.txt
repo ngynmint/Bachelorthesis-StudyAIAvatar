@@ -1,0 +1,24 @@
+[0.00s] Session Start: 2026-04-26 16:54:01.249
+Participant ID: 01 
+Variable Tested: Test
+
+Interaction 1:
+[13,56s] User:  Hi, what's up? Um, how are you? Give me an answer of maybe two sentences, please.
+[27,07s] AI Response: I'm doing well, thanks for asking! Just getting through the day, studying and trying to stay focused - it's been a pretty typical student life lately.
+Gaze at Avatar (Explanation): 748 ms, 10% of 7,3s
+Gaze at Avatar (AI Response): 70 ms, 1% of 8,4s
+
+Interaction 2:
+[47,16s] User:  Ah okay I see um have you have you learned anything about the pedagogues theory maybe?
+[71,98s] AI Response: I think I've come across Jean Piaget's theories in my studies! He's a Swiss psychologist who's known for his work on cognitive development and learning. From what I recall, he proposed that children progress through four stages of cognitive development: sensorimotor, preoperational, concrete operational, and formal operational.
+
+Piaget believed that children learn by actively constructing their own knowledge through experiences and interactions with the environment. He also emphasized the importance of hands-on, experiential learning in helping children develop problem-solving skills and understanding of the world around them.
+
+Does that sound right to you?
+Gaze at Avatar (Explanation): 722 ms, 8% of 9,0s
+Gaze at Avatar (AI Response): 13391 ms, 34% of 39,8s
+
+=== SESSION SUMMARY ===
+Total Gaze at Avatar (Explanation): 1470 ms
+Total Explanation Time: 16,38 s
+Overall Gaze Percentage: 9,0%

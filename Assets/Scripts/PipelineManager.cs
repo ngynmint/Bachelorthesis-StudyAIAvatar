@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 using NativeWebSocket;
@@ -15,10 +14,18 @@ public class PipelineManager : MonoBehaviour
     private string lastUserText = "";
     private float lastRecordingDuration = 0f;
 
+    private float userStartMs;
+    private float aiStartMs;
+    private float gazeExplanation;
+
     async void Start()
     {
+        recorder.OnRecordingStarted += StartExplanationGaze;
+        recorder.OnRecordingStopped += StopExplanationGaze;
+        
         recorder.OnAudioReady += (clip, duration) => {
         lastRecordingDuration = duration;
+        userStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
         SendAudioToServer(clip);
         };  
 
@@ -45,8 +52,9 @@ public class PipelineManager : MonoBehaviour
             }
             else
             {
-                sessionLogger.LogTurn(lastUserText, lastRecordingDuration, pendingAiText);
-                StartCoroutine(PlayAudio(bytes));
+                aiStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
+                sessionLogger.StartGazeTracking();  
+                StartCoroutine(PlayAudioAndLog(bytes, pendingAiText));
                 waitingForText = true;
             }
         };
@@ -57,14 +65,6 @@ public class PipelineManager : MonoBehaviour
     private async void SendAudioToServer(AudioClip clip)
     {
         if (websocket.State != WebSocketState.Open) return;
-
-        string name = clip.name;
-        if (name.Contains("duration="))
-        {
-            string durationStr = name.Split(new string[]{"duration="}, System.StringSplitOptions.None)[1];
-            float.TryParse(durationStr, System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out lastRecordingDuration);
-        }
 
         Debug.Log($"Send Audio: {clip.samples} samples, {clip.channels} channels, {clip.frequency}Hz");
 
@@ -102,7 +102,7 @@ public class PipelineManager : MonoBehaviour
         return wav;
     }
 
-    private IEnumerator PlayAudio(byte[] wavBytes)
+    private IEnumerator PlayAudioAndLog(byte[] wavBytes, string aiText)
     {
         float[] samples = WavToFloats(wavBytes, out int channels, out int frequency);
         AudioClip clip = AudioClip.Create("AI_Response",
@@ -110,7 +110,15 @@ public class PipelineManager : MonoBehaviour
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         avatarAudioSource.Play();
+
         yield return new WaitForSeconds(clip.length);
+
+        float gazeAI = sessionLogger.StopGazeTracking();
+        sessionLogger.LogTurn(
+            lastUserText, lastRecordingDuration, gazeExplanation,
+            aiText, clip.length, gazeAI,
+            userStartMs, aiStartMs
+        );
     }
 
     private float[] WavToFloats(byte[] wav, out int channels, out int frequency)
@@ -126,6 +134,16 @@ public class PipelineManager : MonoBehaviour
             samples[i] = s / 32768f;
         }
         return samples;
+    }
+
+    private void StartExplanationGaze()
+    {
+        sessionLogger.StartGazeTracking();
+    }
+
+    private void StopExplanationGaze()
+    {
+        gazeExplanation = sessionLogger.StopGazeTracking();
     }
 
     void Update()
