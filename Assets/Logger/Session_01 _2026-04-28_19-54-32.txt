@@ -1,8 +1,0 @@
-[0.00s] Session Start: 2026-04-28 19:54:32.000
-Participant ID: 01 
-Variable Tested: Test
-
-=== SESSION SUMMARY ===
-Total Gaze at Avatar (Explanation): 0,00 s
-Total Explanation Time: 0,00 s
-Overall Gaze Percentage: 0,0%
