@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class MicrophoneRecorder : MonoBehaviour
 {
     public System.Action<AudioClip, float> OnAudioReady;
-
     private AudioClip recordedClip;
     private bool isRecording = false;
     private int sampleRate = 44100;
@@ -13,9 +12,8 @@ public class MicrophoneRecorder : MonoBehaviour
     private float recordingStartTime;
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
+    private string activeMic = "Headset Microphone (Oculus Virtual Audio Device)";
 
-    private const string HEADSET_MIC = "Headset Microphone (Oculus Virtual Audio Device)";
-    private string activeMic => HEADSET_MIC;
 
     void Update()
     {
@@ -28,9 +26,13 @@ public class MicrophoneRecorder : MonoBehaviour
         bool triggerPressed = rightTrigger || leftTrigger;
 
         if (triggerPressed && !isRecording)
+        {
             StartRecording();
+        }
         else if (!triggerPressed && isRecording)
+        {
             StopRecording();
+        }
     }
 
     private void StartRecording()
@@ -65,16 +67,20 @@ public class MicrophoneRecorder : MonoBehaviour
         float[] samples = new float[lastSample * recordedClip.channels];
         recordedClip.GetData(samples, 0);
 
-        AudioClip trimmed = AudioClip.Create("recorded", lastSample,
-            recordedClip.channels, sampleRate, false);
+        AudioClip trimmed = AudioClip.Create("recorded", lastSample, recordedClip.channels, sampleRate, false);
         trimmed.SetData(samples, 0);
         recordedClip = trimmed;
+
         if (OnRecordingStopped != null)
         {
             OnRecordingStopped();
         }
 
         Debug.Log($"Recording stopped: {duration:F1}s");
-        OnAudioReady?.Invoke(recordedClip, duration);
+        
+        if (OnAudioReady != null)
+        {
+            OnAudioReady(recordedClip, duration);
+        }
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.IO;
+using System.Globalization; 
 
 public class SessionLogger : MonoBehaviour
 {
@@ -11,7 +12,10 @@ public class SessionLogger : MonoBehaviour
     private string logFilePath;
     private float sessionStartTime;
     private bool lastGazeState = false;
-    public float GetSessionStartTime() => sessionStartTime;
+    public float GetSessionStartTime()
+    {
+        return sessionStartTime;
+    }
     public GameObject gazeDebugDot;
 
 
@@ -30,10 +34,17 @@ public class SessionLogger : MonoBehaviour
         Debug.Log("[Logger] CSV Log @: " + logFilePath);
     }
 
-    private float TimeNow() => Time.time - sessionStartTime;
+    private string FormatFloat(float value)
+    {
+        return value.ToString("F2", CultureInfo.InvariantCulture);
+    }
+    private float GetTimeNow()
+    {
+        return Time.time - sessionStartTime;
+    }
     private void LogEvent(string eventType, string value = "")
     {
-        string line = $"{TimeNow():F2},{eventType},{value}\n";
+        string line = FormatFloat(GetTimeNow()) + "," + eventType + "," + value + "\n";
         File.AppendAllText(logFilePath, line);
     }
     private bool IsGazing()
@@ -45,10 +56,7 @@ public class SessionLogger : MonoBehaviour
 
         Transform cam = Camera.main.transform;
 
-        Vector3 origin = cam.position;
-        Vector3 direction = cam.forward;
-
-        Ray ray = new Ray(origin, direction);
+        Ray ray = new Ray(cam.position, cam.forward);
         RaycastHit hit;
 
         bool didHit = Physics.Raycast(ray, out hit, 100f);
@@ -86,7 +94,15 @@ public class SessionLogger : MonoBehaviour
             }
         if (gazing != lastGazeState)
         {
-            LogEvent(gazing ? "GAZE_ON" : "GAZE_OFF");
+            if (gazing)
+            {
+                LogEvent("GAZE_ON", "");
+            }
+            else
+            {
+                LogEvent("GAZE_OFF", "");
+            }
+
             lastGazeState = gazing;
         }
     }
@@ -94,18 +110,18 @@ public class SessionLogger : MonoBehaviour
     public void LogUserTurn(string userText, float recordingDuration, float userStartMs)
     {
         float userStartS = userStartMs / 1000f;
-        File.AppendAllText(logFilePath, 
-            $"{userStartS:F2},USER_SPEECH,\"{userText}\"\n");
-        File.AppendAllText(logFilePath,
-            $"{userStartS:F2},EXPLANATION_DURATION,{recordingDuration:F2}\n");
+        string speechLine = FormatFloat(userStartS) + ",USER_SPEECH,\"" + userText + "\"\n";
+        File.AppendAllText(logFilePath, speechLine);
+        string durationLine = FormatFloat(userStartS) + ",EXPLANATION_DURATION," + FormatFloat(recordingDuration) + "\n";
+        File.AppendAllText(logFilePath, durationLine);
     }
 
     public void LogAITurn(string aiText, float aiDuration, float aiStartMs)
     {
         float aiStartS = aiStartMs / 1000f;
-        File.AppendAllText(logFilePath,
-            $"{aiStartS:F2},AI_RESPONSE,\"{aiText}\"\n");
-        File.AppendAllText(logFilePath,
-            $"{aiStartS:F2},AI_DURATION,{aiDuration:F2}\n");
+        string responseLine = FormatFloat(aiStartS) + ",AI_RESPONSE,\"" + aiText + "\"\n";
+        File.AppendAllText(logFilePath, responseLine);
+        string durationLine = FormatFloat(aiStartS) + ",AI_DURATION," + FormatFloat(aiDuration) + "\n";
+        File.AppendAllText(logFilePath, durationLine);
     }
 }

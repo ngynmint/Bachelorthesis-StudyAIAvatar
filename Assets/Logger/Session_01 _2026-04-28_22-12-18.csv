@@ -1,0 +1,23 @@
+time_s,event_type,value
+0,00,SESSION_START,01 
+0,00,VARIABLE,Test
+1,11,GAZE_ON,
+3,44,GAZE_OFF,
+5,30,GAZE_ON,
+5,71,GAZE_OFF,
+6,16,GAZE_ON,
+12,77,GAZE_OFF,
+16,94,GAZE_ON,
+17,55,GAZE_OFF,
+18,34,GAZE_ON,
+19,82,GAZE_OFF,
+21,46,GAZE_ON,
+22,82,GAZE_OFF,
+22,88,GAZE_ON,
+18.49,USER_SPEECH," Can you just say something for like one, for like three seconds just so"
+18.49,EXPLANATION_DURATION,8.50
+27.86,AI_RESPONSE,"*pauses for a brief moment*"
+27.86,AI_DURATION,2.58
+32,13,GAZE_OFF,
+32,91,GAZE_ON,
+34,02,GAZE_OFF,

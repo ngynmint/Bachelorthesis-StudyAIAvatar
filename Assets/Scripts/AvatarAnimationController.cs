@@ -30,6 +30,7 @@ public class AvatarAnimationController : MonoBehaviour
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(1);
         string currentState = "loading...";
+
         if (stateInfo.IsName("Idle")) {
             currentState = "IDLE";
         }
@@ -45,18 +46,19 @@ public class AvatarAnimationController : MonoBehaviour
             Debug.Log($"[Anim] Switched to: {currentState}");
             lastLoggedState = currentState;
         }
-        Debug.Log("isPlaying: " + audioPlaying + ", isTalking: " + isTalking);
     }
 
     private void StartTalking()
     {
         isTalking = true;
+
         bool useOtherAnimation = false;
         int r = Random.Range(0, 2);
         if (r == 1)
         {
             useOtherAnimation = true;
         }
+        
         animator.SetBool("UseOtherAnimation", useOtherAnimation);
         animator.SetBool("IsTalking", true);
         Debug.Log("[Anim] StartTalking → UseOtherAnimation=" + useOtherAnimation);

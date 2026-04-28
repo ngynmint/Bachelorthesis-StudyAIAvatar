@@ -1,0 +1,21 @@
+time_s,event_type,value
+0,00,SESSION_START,01 
+0,00,VARIABLE,Test
+1,93,GAZE_ON,
+5,15,GAZE_OFF,
+5,73,GAZE_ON,
+6,90,GAZE_OFF,
+7,48,GAZE_ON,
+7,98,GAZE_OFF,
+8,66,GAZE_ON,
+14,63,GAZE_OFF,
+16,56,GAZE_ON,
+13.31,USER_SPEECH," Hi, I just wanted to say something. Just say one or two sentences please. Thank you."
+13.31,EXPLANATION_DURATION,6.74
+19,04,GAZE_OFF,
+19,20,GAZE_ON,
+20,88,GAZE_OFF,
+21,43,GAZE_ON,
+18.97,AI_RESPONSE,"Sounds good! Go ahead and share what's on your mind, I'll listen."
+18.97,AI_DURATION,3.35
+23,72,GAZE_OFF,

@@ -19,11 +19,8 @@ public class PipelineManager : MonoBehaviour
 
     async void Start()
     { 
-        recorder.OnAudioReady += (clip, duration) => {
-        lastRecordingDuration = duration;
-        userStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
-        SendAudioToServer(clip);
-        };  
+        recorder.OnAudioReady += OnAudioReady; 
+        
 
         websocket = new WebSocket("ws://localhost:8765");
 
@@ -56,6 +53,13 @@ public class PipelineManager : MonoBehaviour
         };
 
         await websocket.Connect();
+    }
+
+    private void OnAudioReady(AudioClip clip, float duration)
+    {
+        lastRecordingDuration = duration;
+        userStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
+        SendAudioToServer(clip);
     }
 
     private async void SendAudioToServer(AudioClip clip)
