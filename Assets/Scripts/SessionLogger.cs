@@ -131,8 +131,8 @@ public class SessionLogger : MonoBehaviour
             $"Interaction {turnIndex}:\n" +
             $"[{userStartS:F2}s] User: {userText}\n" +
             $"[{aiStartS:F2}s] AI Response: {aiResponse}\n" +
-            $"Gaze at Avatar (Explanation): {gazeExplanation * 1000:F0} ms, {gazePctExplanation:F0}% of {recordingDuration:F1}s\n" +
-            $"Gaze at Avatar (AI Response): {gazeAI * 1000:F0} ms, {gazePctAI:F0}% of {aiDuration:F1}s\n\n";
+            $"Gaze at Avatar (Explanation): {gazeExplanation:F2} s, {gazePctExplanation:F0}% of {recordingDuration:F1}s\n" +
+            $"Gaze at Avatar (AI Response): {gazeAI:F2} s, {gazePctAI:F0}% of {aiDuration:F1}s\n\n";
 
         File.AppendAllText(logFilePath, entry);
         Debug.Log($"[Logger] Interaction {turnIndex} logged");
@@ -145,7 +145,7 @@ public class SessionLogger : MonoBehaviour
 
         string summary =
             "=== SESSION SUMMARY ===\n" +
-            $"Total Gaze at Avatar (Explanation): {totalGazeExplanation * 1000f:F0} ms\n" +
+            $"Total Gaze at Avatar (Explanation): {totalGazeExplanation:F2} s\n" +
             $"Total Explanation Time: {totalExplanationTime:F2} s\n" +
             $"Overall Gaze Percentage: {totalPct:F1}%\n";
 

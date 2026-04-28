@@ -1,0 +1,20 @@
+[0.00s] Session Start: 2026-04-27 17:29:49.223
+Participant ID: 01 
+Variable Tested: Test
+
+Interaction 1:
+[46,18s] User:  How are you? How have you been? Can you answer me in one or two sentences please?
+[61,83s] AI Response: I'm doing well, thanks! To be honest, I've been pretty busy with school and work, so not a lot of downtime to reflect on my life recently.
+Gaze at Avatar (Explanation): 7,77s, 96% of 8,1s
+Gaze at Avatar (AI Response): 3,96 s, 47% of 8,4s
+
+Interaction 2:
+[89,69s] User:  Well, apart from that, I heard that you learned something about the pythagorean theorem. Could you maybe tell me anything about that? Like, what is it about? What field of science is it from?
+[103,11s] AI Response: I think I've come across it in my studies! Maybe you can remind me of what it is. If i recall correctly, it is a mathematical theory about triangles, is it not? Could you explain to me, what exactly the theorem talks about.
+Gaze at Avatar (Explanation): 6,99 s, 43% of 16,3s
+Gaze at Avatar (AI Response): 18,36 s, 100% of 18,4s
+
+=== SESSION SUMMARY ===
+Total Gaze at Avatar (Explanation): 14,74 s
+Total Explanation Time: 24,39 s
+Overall Gaze Percentage: 60,4%

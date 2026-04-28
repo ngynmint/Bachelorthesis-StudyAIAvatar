@@ -9,10 +9,8 @@ Gaze at Avatar (Explanation): 748 ms, 10% of 7,3s
 Gaze at Avatar (AI Response): 70 ms, 1% of 8,4s
 
 Interaction 2:
-[47,16s] User:  Ah okay I see um have you have you learned anything about the pedagogues theory maybe?
-[71,98s] AI Response: I think I've come across Jean Piaget's theories in my studies! He's a Swiss psychologist who's known for his work on cognitive development and learning. From what I recall, he proposed that children progress through four stages of cognitive development: sensorimotor, preoperational, concrete operational, and formal operational.
-
-Piaget believed that children learn by actively constructing their own knowledge through experiences and interactions with the environment. He also emphasized the importance of hands-on, experiential learning in helping children develop problem-solving skills and understanding of the world around them.
+[47,16s] User:  Ah okay I see um have you have you learned anything about the pythagoream theory maybe?
+[71,98s] AI Response: I think I've come across it in my studies! Maybe you can remind me of what it is. If i recall correctly, it is a mathematical theory about triangles, is it not? Could you explain to me, what exactly the theorem talks about.
 
 Does that sound right to you?
 Gaze at Avatar (Explanation): 722 ms, 8% of 9,0s
