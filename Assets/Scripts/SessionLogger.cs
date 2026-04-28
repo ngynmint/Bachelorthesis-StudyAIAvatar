@@ -9,13 +9,8 @@ public class SessionLogger : MonoBehaviour
     public string variableTested= " ";
     public Transform avatarTransform;
     private string logFilePath;
-    private int turnIndex = 0;
     private float sessionStartTime;
-    private float gazeStartTime = -1f;
-    private float gazeDuration = 0f;
-    private float totalExplanationTime = 0f;
-    private float totalGazeExplanation = 0f;
-    private bool wasGazing = false;
+    private bool lastGazeState = false;
     public float GetSessionStartTime() => sessionStartTime;
     public GameObject gazeDebugDot;
 
@@ -26,15 +21,20 @@ public class SessionLogger : MonoBehaviour
         string logDir = Path.Combine(Application.dataPath, "Logger");
         Directory.CreateDirectory(logDir);
 
-        string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-        logFilePath = Path.Combine(logDir, $"Session_{participantID}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
+        string fileName = $"Session_{participantID}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
+        logFilePath = Path.Combine(logDir, fileName);
 
-        File.WriteAllText(logFilePath,
-            $"[0.00s] Session Start: {timestamp}\n" +
-            $"Participant ID: {participantID}\n" +
-            $"Variable Tested: {variableTested}\n\n");
+        File.WriteAllText(logFilePath, "time_s,event_type,value\n");
+        LogEvent("SESSION_START", participantID);
+        LogEvent("VARIABLE", variableTested);
+        Debug.Log("[Logger] CSV Log @: " + logFilePath);
+    }
 
-        Debug.Log($"[Logger] Logging to: {logFilePath}");
+    private float TimeNow() => Time.time - sessionStartTime;
+    private void LogEvent(string eventType, string value = "")
+    {
+        string line = $"{TimeNow():F2},{eventType},{value}\n";
+        File.AppendAllText(logFilePath, line);
     }
     private bool IsGazing()
     {
@@ -54,39 +54,26 @@ public class SessionLogger : MonoBehaviour
         bool didHit = Physics.Raycast(ray, out hit, 100f);
 
         if (Physics.Raycast(ray, out hit, 100f))
-    {
-        Transform t = hit.transform;
-
-        if (t == avatarTransform)
         {
-            return true;
-        }
-
-        while (t.parent != null)
-        {
-            t = t.parent;
+            Transform t = hit.transform;
 
             if (t == avatarTransform)
             {
                 return true;
             }
+
+            while (t.parent != null)
+            {
+                t = t.parent;
+
+                if (t == avatarTransform)
+                {
+                    return true;
+                }
+            }
         }
-    }
 
         return false;
-    }
-    public void StartGazeTracking()
-    {
-        gazeDuration = 0f;
-        wasGazing = false;
-        gazeStartTime = -1f;
-    }
-
-    public float StopGazeTracking()
-    {
-        if (wasGazing && gazeStartTime >= 0f)
-            gazeDuration += Time.time - gazeStartTime;
-        return gazeDuration;
     }
 
     void Update()
@@ -97,58 +84,28 @@ public class SessionLogger : MonoBehaviour
             {
                 gazeDebugDot.SetActive(gazing);
             }
-        if (gazing)
+        if (gazing != lastGazeState)
         {
-            if (!wasGazing)
-            {
-                gazeStartTime = Time.time;
-            }
+            LogEvent(gazing ? "GAZE_ON" : "GAZE_OFF");
+            lastGazeState = gazing;
         }
-        else
-        {
-            if (wasGazing && gazeStartTime >= 0f)
-            {
-                gazeDuration += Time.time - gazeStartTime;
-                gazeStartTime = -1f;
-            }
-        }
-
-        wasGazing = gazing;
     }
 
-    public void LogTurn(string userText, float recordingDuration, float gazeExplanation, string aiResponse, float aiDuration, float gazeAI, float userStartMs, float aiStartMs)
+    public void LogUserTurn(string userText, float recordingDuration, float userStartMs)
     {
-        turnIndex++;
-        totalExplanationTime += recordingDuration;
-        totalGazeExplanation += gazeExplanation;
-
-        float gazePctExplanation = recordingDuration > 0 ? (gazeExplanation / recordingDuration) * 100f : 0f;
-        float gazePctAI = aiDuration > 0 ? (gazeAI / aiDuration) * 100f : 0f;
         float userStartS = userStartMs / 1000f;
-        float aiStartS = aiStartMs / 1000f;
-
-        string entry =
-            $"Interaction {turnIndex}:\n" +
-            $"[{userStartS:F2}s] User: {userText}\n" +
-            $"[{aiStartS:F2}s] AI Response: {aiResponse}\n" +
-            $"Gaze at Avatar (Explanation): {gazeExplanation:F2} s, {gazePctExplanation:F0}% of {recordingDuration:F1}s\n" +
-            $"Gaze at Avatar (AI Response): {gazeAI:F2} s, {gazePctAI:F0}% of {aiDuration:F1}s\n\n";
-
-        File.AppendAllText(logFilePath, entry);
-        Debug.Log($"[Logger] Interaction {turnIndex} logged");
+        File.AppendAllText(logFilePath, 
+            $"{userStartS:F2},USER_SPEECH,\"{userText}\"\n");
+        File.AppendAllText(logFilePath,
+            $"{userStartS:F2},EXPLANATION_DURATION,{recordingDuration:F2}\n");
     }
 
-    void OnApplicationQuit()
+    public void LogAITurn(string aiText, float aiDuration, float aiStartMs)
     {
-        float totalPct = totalExplanationTime > 0
-            ? totalGazeExplanation / totalExplanationTime * 100f : 0f;
-
-        string summary =
-            "=== SESSION SUMMARY ===\n" +
-            $"Total Gaze at Avatar (Explanation): {totalGazeExplanation:F2} s\n" +
-            $"Total Explanation Time: {totalExplanationTime:F2} s\n" +
-            $"Overall Gaze Percentage: {totalPct:F1}%\n";
-
-        File.AppendAllText(logFilePath, summary);
+        float aiStartS = aiStartMs / 1000f;
+        File.AppendAllText(logFilePath,
+            $"{aiStartS:F2},AI_RESPONSE,\"{aiText}\"\n");
+        File.AppendAllText(logFilePath,
+            $"{aiStartS:F2},AI_DURATION,{aiDuration:F2}\n");
     }
 }

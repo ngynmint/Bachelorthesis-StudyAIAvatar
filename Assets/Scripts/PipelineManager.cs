@@ -16,13 +16,9 @@ public class PipelineManager : MonoBehaviour
 
     private float userStartMs;
     private float aiStartMs;
-    private float gazeExplanation;
 
     async void Start()
-    {
-        recorder.OnRecordingStarted += StartExplanationGaze;
-        recorder.OnRecordingStopped += StopExplanationGaze;
-        
+    { 
         recorder.OnAudioReady += (clip, duration) => {
         lastRecordingDuration = duration;
         userStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
@@ -45,15 +41,15 @@ public class PipelineManager : MonoBehaviour
                 string json = System.Text.Encoding.UTF8.GetString(bytes);
                 var response = JsonUtility.FromJson<AIResponse>(json);
                 pendingAiText = response.text;
-                lastUserText = response.stt_text; // ← hinzufügen
+                lastUserText = response.stt_text; 
                 Debug.Log($"AI Text: {response.text}");
                 Debug.Log($"User Text: {response.stt_text}");
+                sessionLogger.LogUserTurn(lastUserText, lastRecordingDuration, userStartMs);
                 waitingForText = false;
             }
             else
             {
                 aiStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
-                sessionLogger.StartGazeTracking();  
                 StartCoroutine(PlayAudioAndLog(bytes, pendingAiText));
                 waitingForText = true;
             }
@@ -113,12 +109,7 @@ public class PipelineManager : MonoBehaviour
 
         yield return new WaitForSeconds(clip.length);
 
-        float gazeAI = sessionLogger.StopGazeTracking();
-        sessionLogger.LogTurn(
-            lastUserText, lastRecordingDuration, gazeExplanation,
-            aiText, clip.length, gazeAI,
-            userStartMs, aiStartMs
-        );
+        sessionLogger.LogAITurn(aiText, clip.length, aiStartMs);
     }
 
     private float[] WavToFloats(byte[] wav, out int channels, out int frequency)
@@ -136,15 +127,6 @@ public class PipelineManager : MonoBehaviour
         return samples;
     }
 
-    private void StartExplanationGaze()
-    {
-        sessionLogger.StartGazeTracking();
-    }
-
-    private void StopExplanationGaze()
-    {
-        gazeExplanation = sessionLogger.StopGazeTracking();
-    }
 
     void Update()
     {
