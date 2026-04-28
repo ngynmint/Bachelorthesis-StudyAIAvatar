@@ -11,41 +11,62 @@ public class AvatarAnimationController : MonoBehaviour
 
     void Update()
     {
-        bool audioPlaying = avatarAudioSource != null && avatarAudioSource.isPlaying;
-
+        bool audioPlaying = false;
+        
+        if (avatarAudioSource != null)
+        {
+            audioPlaying = avatarAudioSource.isPlaying;
+        }
+        
         if (audioPlaying && !isTalking)
+        {
             StartTalking();
+        }
         else if (!audioPlaying && isTalking)
+        {
             StopTalking();
+        }
 
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        string currentState = "UNKNOWN";
-        if (stateInfo.IsName("Idle")) currentState = "IDLE";
-        else if (stateInfo.IsName("Talking1")) currentState = "TALKING 1";
-        else if (stateInfo.IsName("Talking2")) currentState = "TALKING 2";
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(1);
+        string currentState = "loading...";
+        if (stateInfo.IsName("Idle")) {
+            currentState = "IDLE";
+        }
+        else if (stateInfo.IsName("Talking1")){
+            currentState = "TALKING 1";
+        }
+        else if (stateInfo.IsName("Talking2")){
+            currentState = "TALKING 2";
+        }
 
         if (currentState != lastLoggedState)
         {
             Debug.Log($"[Anim] Switched to: {currentState}");
             lastLoggedState = currentState;
         }
-        Debug.Log($"isPlaying: {avatarAudioSource.isPlaying}, isTalking: {isTalking}");
+        Debug.Log("isPlaying: " + audioPlaying + ", isTalking: " + isTalking);
     }
 
     private void StartTalking()
     {
         isTalking = true;
-        bool useTalking2 = Random.value > 0.5f;
-        animator.SetBool("UserTalking", useTalking2);
+        bool useOtherAnimation = false;
+        int r = Random.Range(0, 2);
+        if (r == 1)
+        {
+            useOtherAnimation = true;
+        }
+        animator.SetBool("UseOtherAnimation", useOtherAnimation);
         animator.SetBool("IsTalking", true);
-        Debug.Log($"[Anim] StartTalking → UserTalking={useTalking2}");
+        Debug.Log("[Anim] StartTalking → UseOtherAnimation=" + useOtherAnimation);
     }
 
     private void StopTalking()
     {
         isTalking = false;
         animator.SetBool("IsTalking", false);
-        animator.SetBool("UserTalking", false);
+        animator.SetBool("UseOtherAnimation", false);
         Debug.Log("[Anim] StopTalking");
     }
 }

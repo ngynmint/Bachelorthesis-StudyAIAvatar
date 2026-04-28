@@ -1,0 +1,28 @@
+[0.00s] Session Start: 2026-04-28 19:56:04.370
+Participant ID: 01 
+Variable Tested: Test
+
+Interaction 1:
+[12,14s] User:  How are you? Do you want to reply to me in one or two sentences? Just say hi and how you are. That'd be great.
+[23,41s] AI Response: Hi, I'm doing well, thanks for asking!
+Gaze at Avatar (Explanation): 7,87 s, 100% of 7,9s
+Gaze at Avatar (AI Response): 0,06 s, 2% of 2,4s
+
+Interaction 2:
+[33,29s] User:  Can you just say one more sentence, please?
+[37,54s] AI Response: I'll keep responding as we chat.
+Gaze at Avatar (Explanation): 3,38 s, 100% of 3,4s
+Gaze at Avatar (AI Response): 1,68 s, 100% of 1,7s
+
+Interaction 3:
+[47,30s] User:  Can you talk for a little bit longer just so you run themself?
+[59,86s] AI Response: I can definitely chat with you for a bit longer and get myself warmed up. What's on your mind? Want to discuss something specific or just see where the conversation goes?
+
+Also, I have to say, it's not every day that I'm told to "run myself"! That's a new one.
+Gaze at Avatar (Explanation): 5,08 s, 100% of 5,1s
+Gaze at Avatar (AI Response): 15,41 s, 98% of 15,7s
+
+=== SESSION SUMMARY ===
+Total Gaze at Avatar (Explanation): 16,34 s
+Total Explanation Time: 16,34 s
+Overall Gaze Percentage: 100,0%
