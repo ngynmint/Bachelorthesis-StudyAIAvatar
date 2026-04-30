@@ -24,7 +24,11 @@ public class PipelineManager : MonoBehaviour
 
         websocket = new WebSocket("ws://localhost:8765");
 
-        websocket.OnOpen += () => Debug.Log("Server connected");
+        websocket.OnOpen += () =>
+        {
+            Debug.Log("Server connected");
+            SendPromptFile();
+        };
         websocket.OnError += (e) => Debug.LogError($"WebSocket Error: {e}");
         websocket.OnClose += (e) => Debug.Log("Connection closed");
 
@@ -38,10 +42,15 @@ public class PipelineManager : MonoBehaviour
                 string json = System.Text.Encoding.UTF8.GetString(bytes);
                 var response = JsonUtility.FromJson<AIResponse>(json);
                 pendingAiText = response.text;
-                lastUserText = response.stt_text; 
-                Debug.Log($"AI Text: {response.text}");
-                Debug.Log($"User Text: {response.stt_text}");
-                sessionLogger.LogUserTurn(lastUserText, lastRecordingDuration, userStartMs);
+                lastUserText = response.stt_text;
+                Debug.Log("AI Text: " + response.text);
+                Debug.Log("User Text: " + response.stt_text);
+
+                if (lastUserText != null && lastUserText.Trim().Length > 0)
+                {
+                    sessionLogger.LogUserTurn(lastUserText, lastRecordingDuration, userStartMs);
+                }
+
                 waitingForText = false;
             }
             else
@@ -55,6 +64,14 @@ public class PipelineManager : MonoBehaviour
         await websocket.Connect();
     }
 
+    private async void SendPromptFile()
+    {
+        await System.Threading.Tasks.Task.Delay(500);
+        string promptFile = sessionLogger.variableTested.Trim().ToLower() + ".txt";
+        string configJson = "{\"prompt_file\": \"" + promptFile + "\"}";
+        await websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
+        Debug.Log("Sent prompt file: " + promptFile);
+    }
     private void OnAudioReady(AudioClip clip, float duration)
     {
         lastRecordingDuration = duration;
@@ -137,6 +154,7 @@ public class PipelineManager : MonoBehaviour
         #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
         #endif
+        Debug.Log("websocket state: " + websocket?.State);
     }
 
     async void OnDestroy()
