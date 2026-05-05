@@ -5,7 +5,7 @@ using NativeWebSocket;
 
 public class PipelineManager : MonoBehaviour
 {
-    [Header("Komponenten")]
+    [Header("Components")]
     public MicrophoneRecorder recorder;
     public AudioSource avatarAudioSource;
     public SessionLogger sessionLogger;
@@ -126,10 +126,11 @@ public class PipelineManager : MonoBehaviour
             samples.Length / channels, channels, frequency, false);
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
+        recorder.isLocked = true;
         avatarAudioSource.Play();
 
         yield return new WaitForSeconds(clip.length);
-
+        recorder.isLocked = false;
         sessionLogger.LogAITurn(aiText, clip.length, aiStartMs);
     }
 
@@ -154,7 +155,7 @@ public class PipelineManager : MonoBehaviour
         #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
         #endif
-        Debug.Log("websocket state: " + websocket?.State);
+        //Debug.Log("websocket state: " + websocket?.State);
     }
 
     async void OnDestroy()
