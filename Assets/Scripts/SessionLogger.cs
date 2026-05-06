@@ -12,6 +12,8 @@ public class SessionLogger : MonoBehaviour
     private string logFilePath;
     private float sessionStartTime;
     private bool lastGazeState = false;
+    private bool materialOpen = false;
+    private float materialOpenTime = 0f;
     public float GetSessionStartTime()
     {
         return sessionStartTime;
@@ -123,5 +125,19 @@ public class SessionLogger : MonoBehaviour
         File.AppendAllText(logFilePath, responseLine);
         string durationLine = FormatFloat(aiStartS) + ",AI_DURATION," + FormatFloat(aiDuration) + "\n";
         File.AppendAllText(logFilePath, durationLine);
+    }
+
+    public void LogMaterialOpened()
+    {
+        materialOpen = true;
+        materialOpenTime = GetTimeNow();
+        LogEvent("MATERIAL_OPEN", "");
+    }
+    public void LogMaterialClosed()
+    {
+        if (!materialOpen) return;
+        materialOpen = false;
+        float duration = GetTimeNow() - materialOpenTime;
+        LogEvent("MATERIAL_CLOSE", FormatFloat(duration));
     }
 }
