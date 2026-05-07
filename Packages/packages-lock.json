@@ -17,6 +17,13 @@
       },
       "hash": "ece3272762f2148dd8d3e658ec04fcbd79d4d97e"
     },
+    "com.muratoreware.unitypdfviewer": {
+      "version": "https://github.com/kdpkke/UnityPDFViewer.git?path=etc/UnityPackage",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "6f0941fd185a6def8bd0bb0136ffa65df3c93c24"
+    },
     "com.soupday.cc3_unity_tools": {
       "version": "file:C:/Users/minhtn/Downloads/ccic_unity_tools-2_2_3/CCiC-Unity-Tools-2.2.3",
       "depth": 0,

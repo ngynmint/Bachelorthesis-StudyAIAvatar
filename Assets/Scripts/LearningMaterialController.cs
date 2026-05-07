@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityPdfViewer;
 
 public class LearningMaterialController : MonoBehaviour
 {
-    [Header("Notepad")]
     public GameObject learningMaterialWindow;
+    public PdfViewerUI pdfViewer;
 
     [Header("settings")]
     public float reachThreshold = 0.3f;
@@ -15,7 +16,12 @@ public class LearningMaterialController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand")) return;
+        Debug.Log("[LearningMaterial] OnTriggerEnter hit by: " + other.gameObject.name + " | Tag: " + other.tag);
+        if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand"))
+        {
+            Debug.Log("[LearningMaterial] Ignored — wrong tag");
+            return;
+        }
 
         handInZone = true;
         gestureUsed = false;
@@ -49,9 +55,23 @@ public class LearningMaterialController : MonoBehaviour
         windowOpen = !windowOpen;
         learningMaterialWindow.SetActive(windowOpen);
         if (windowOpen)
+        {
+            pdfViewer.LoadPDF();
             sessionLogger.LogMaterialOpened();
-        else
+            Debug.Log("[LearningMaterial] Window opened, PDF loading...");
+        }
+        else{
             sessionLogger.LogMaterialClosed();
+            Debug.Log("[LearningMaterial] Window closed");
+        }
         Debug.Log("[LearningMaterial] Window " + (windowOpen ? "opened" : "closed"));
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = handInZone ? Color.green : Color.yellow;
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+            Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
     }
 }
