@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class MicrophoneRecorder : MonoBehaviour
 {
-    public System.Action<AudioClip, float> OnAudioReady;
+    public System.Action<AudioClip, float, float> OnAudioReady; 
     private AudioClip recordedClip;
     private bool isRecording = false;
     private int sampleRate = 44100;
@@ -83,7 +83,7 @@ public class MicrophoneRecorder : MonoBehaviour
         
         if (OnAudioReady != null)
         {
-            OnAudioReady(recordedClip, duration);
+            OnAudioReady(recordedClip, duration, recordingStartTime);
         }
     }
 }

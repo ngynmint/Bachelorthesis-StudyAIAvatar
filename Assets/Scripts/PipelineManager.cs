@@ -72,10 +72,10 @@ public class PipelineManager : MonoBehaviour
         await websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
         Debug.Log("Sent prompt file: " + promptFile);
     }
-    private void OnAudioReady(AudioClip clip, float duration)
+    private void OnAudioReady(AudioClip clip, float duration, float startTime)
     {
         lastRecordingDuration = duration;
-        userStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
+        userStartMs = (startTime - sessionLogger.GetSessionStartTime()) * 1000f;
         SendAudioToServer(clip);
     }
 
@@ -127,11 +127,12 @@ public class PipelineManager : MonoBehaviour
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
+        float playStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
         avatarAudioSource.Play();
 
         yield return new WaitForSeconds(clip.length);
         recorder.isLocked = false;
-        sessionLogger.LogAITurn(aiText, clip.length, aiStartMs);
+        sessionLogger.LogAITurn(aiText, clip.length, playStartMs);
     }
 
     private float[] WavToFloats(byte[] wav, out int channels, out int frequency)
