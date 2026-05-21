@@ -27,7 +27,6 @@ public class PipelineManager : MonoBehaviour
         websocket.OnOpen += () =>
         {
             Debug.Log("Server connected");
-            SendPromptFile();
         };
         websocket.OnError += (e) => Debug.LogError($"WebSocket Error: {e}");
         websocket.OnClose += (e) => Debug.Log("Connection closed");
@@ -64,7 +63,7 @@ public class PipelineManager : MonoBehaviour
         await websocket.Connect();
     }
 
-    private async void SendPromptFile()
+    public async void SendPromptFile()
     {
         await System.Threading.Tasks.Task.Delay(500);
         string promptFile = sessionLogger.variableTested.Trim().ToLower() + ".txt";

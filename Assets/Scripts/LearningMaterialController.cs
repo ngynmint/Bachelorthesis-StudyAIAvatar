@@ -5,8 +5,6 @@ public class LearningMaterialController : MonoBehaviour
 {
     public GameObject learningMaterialWindow;
     public PdfViewerUI pdfViewer;
-
-    [Header("settings")]
     public float reachThreshold = 0.3f;
     public SessionLogger sessionLogger;
     private Vector3 handStartPosition;
@@ -14,6 +12,15 @@ public class LearningMaterialController : MonoBehaviour
     private bool windowOpen = false;
     private bool gestureUsed = false; 
 
+
+    private void Start()
+    {
+        if (learningMaterialWindow != null)
+            learningMaterialWindow.SetActive(true);
+        windowOpen = true;
+        if (pdfViewer != null)
+            pdfViewer.LoadPDF();
+    }
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log("[LearningMaterial] OnTriggerEnter hit by: " + other.gameObject.name + " | Tag: " + other.tag);
