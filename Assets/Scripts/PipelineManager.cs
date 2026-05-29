@@ -9,6 +9,7 @@ public class PipelineManager : MonoBehaviour
     public MicrophoneRecorder recorder;
     public AudioSource avatarAudioSource;
     public SessionLogger sessionLogger;
+    public GameObject InteractionOverPopup;
 
     private WebSocket websocket;
     private string lastUserText = "";
@@ -16,6 +17,9 @@ public class PipelineManager : MonoBehaviour
 
     private float userStartMs;
     private float aiStartMs;
+    private int exchangeCount = 0;
+    private const int MAX_EXCHANGES = 5;
+    private bool sessionEnded = false;
 
     async void Start()
     { 
@@ -33,6 +37,7 @@ public class PipelineManager : MonoBehaviour
 
         bool waitingForText = true;
         string pendingAiText = "";
+        bool pendingIsClosing = false;
 
         websocket.OnMessage += (bytes) =>
         {
@@ -42,20 +47,19 @@ public class PipelineManager : MonoBehaviour
                 var response = JsonUtility.FromJson<AIResponse>(json);
                 pendingAiText = response.text;
                 lastUserText = response.stt_text;
+                pendingIsClosing = response.is_closing;
                 Debug.Log("AI Text: " + response.text);
                 Debug.Log("User Text: " + response.stt_text);
 
                 if (lastUserText != null && lastUserText.Trim().Length > 0)
-                {
                     sessionLogger.LogUserTurn(lastUserText, lastRecordingDuration, userStartMs);
-                }
 
                 waitingForText = false;
             }
             else
             {
                 aiStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
-                StartCoroutine(PlayAudioAndLog(bytes, pendingAiText));
+                StartCoroutine(PlayAudioAndLog(bytes, pendingAiText, pendingIsClosing));
                 waitingForText = true;
             }
         };
@@ -66,10 +70,16 @@ public class PipelineManager : MonoBehaviour
     public async void SendPromptFile()
     {
         await System.Threading.Tasks.Task.Delay(500);
-        string promptFile = sessionLogger.variableTested.Trim().ToLower() + ".txt";
-        string configJson = "{\"prompt_file\": \"" + promptFile + "\"}";
+        string agentName = sessionLogger.variableTested.Trim().ToLower();
+        string configJson = "{\"agent_type\": \"" + agentName + "\"}";
         await websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
-        Debug.Log("Sent prompt file: " + promptFile);
+        Debug.Log("Sent agent type: " + agentName);
+    }
+    private async void SendEndPrompt()
+    {
+        string endJson = "{\"end_prompt\": true}";
+        await websocket.Send(System.Text.Encoding.UTF8.GetBytes(endJson));
+        Debug.Log("Sent end prompt");
     }
     private void OnAudioReady(AudioClip clip, float duration, float startTime)
     {
@@ -118,11 +128,11 @@ public class PipelineManager : MonoBehaviour
         return wav;
     }
 
-    private IEnumerator PlayAudioAndLog(byte[] wavBytes, string aiText)
+    private IEnumerator PlayAudioAndLog(byte[] wavBytes, string aiText, bool isClosing)
     {
         float[] samples = WavToFloats(wavBytes, out int channels, out int frequency);
-        AudioClip clip = AudioClip.Create("AI_Response",
-            samples.Length / channels, channels, frequency, false);
+        AudioClip clip = AudioClip.Create("AI_Response", 
+        samples.Length / channels, channels, frequency, false);
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
@@ -130,8 +140,31 @@ public class PipelineManager : MonoBehaviour
         avatarAudioSource.Play();
 
         yield return new WaitForSeconds(clip.length);
-        recorder.isLocked = false;
         sessionLogger.LogAITurn(aiText, clip.length, playStartMs);
+
+        if (isClosing)
+        {
+            sessionEnded = true;
+            recorder.isLocked = true;
+            if (InteractionOverPopup != null)
+                InteractionOverPopup.SetActive(true);
+            Debug.Log("Session ended. Locking Recorder");
+        }
+        else
+        {
+            exchangeCount++;
+            Debug.Log($"[Pipeline] Exchange {exchangeCount}/{MAX_EXCHANGES} complete");
+
+            if (exchangeCount >= MAX_EXCHANGES)
+            {
+                recorder.isLocked = true;
+                SendEndPrompt();
+            }
+            else
+            {
+                recorder.isLocked = false;
+            }
+        }
     }
 
     private float[] WavToFloats(byte[] wav, out int channels, out int frequency)
@@ -169,5 +202,6 @@ public class PipelineManager : MonoBehaviour
         public string text;
         public string error;
         public string stt_text; 
+        public bool is_closing;
     }
 }
