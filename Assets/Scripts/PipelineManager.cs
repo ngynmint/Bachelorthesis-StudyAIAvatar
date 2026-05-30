@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using NativeWebSocket;
+using TMPro;
+using UnityEngine.XR;
 
 public class PipelineManager : MonoBehaviour
 {
@@ -9,35 +11,55 @@ public class PipelineManager : MonoBehaviour
     public MicrophoneRecorder recorder;
     public AudioSource avatarAudioSource;
     public SessionLogger sessionLogger;
+    public LearningMaterialController learningMaterialController;
+
+    [Header("Avatar")]
+    public GameObject avatarRoot;
+    public float delayAfterFadeBeforeSpeak = 1.5f;
+    
+    [Header("Panels")]
+    public GameObject ControllerInstructions1Panel;
+    public GameObject LearningMaterialCanvas;
+    public GameObject TimeOverPopup;           
+    public GameObject ControllerInstructions2Panel; 
+    public GameObject TaskGoalPanel;           
     public GameObject InteractionOverPopup;
+    
+    [Header("Blink Transition")]
+    public CanvasGroup fadingCanvas;
+    public float blinkFadeDuration = 0.4f;
+
+    public float studyDuration = 900f;
 
     private WebSocket websocket;
     private string lastUserText = "";
     private float lastRecordingDuration = 0f;
-
     private float userStartMs;
     private float aiStartMs;
     private int exchangeCount = 0;
     private const int MAX_EXCHANGES = 5;
     private bool sessionEnded = false;
 
+    private enum FlowStage { Instructions, Studying, ControllerInstructions2, TaskGoal, Interaction }
+    private FlowStage currentStage = FlowStage.Instructions;
+    private bool waitingForButtonPress = false;
     async void Start()
     { 
+        fadingCanvas.alpha = 0f;
+        fadingCanvas.interactable = false;
+        fadingCanvas.blocksRaycasts = false;
         recorder.OnAudioReady += OnAudioReady; 
-        
+        recorder.isLocked = true;
+
+        waitingForButtonPress = true;
 
         websocket = new WebSocket("ws://localhost:8765");
-
-        websocket.OnOpen += () =>
-        {
-            Debug.Log("Server connected");
-        };
+        websocket.OnOpen += () => Debug.Log("Server connected");
         websocket.OnError += (e) => Debug.LogError($"WebSocket Error: {e}");
         websocket.OnClose += (e) => Debug.Log("Connection closed");
 
         bool waitingForText = true;
         string pendingAiText = "";
-        bool pendingIsClosing = false;
 
         websocket.OnMessage += (bytes) =>
         {
@@ -47,7 +69,6 @@ public class PipelineManager : MonoBehaviour
                 var response = JsonUtility.FromJson<AIResponse>(json);
                 pendingAiText = response.text;
                 lastUserText = response.stt_text;
-                pendingIsClosing = response.is_closing;
                 Debug.Log("AI Text: " + response.text);
                 Debug.Log("User Text: " + response.stt_text);
 
@@ -59,28 +80,167 @@ public class PipelineManager : MonoBehaviour
             else
             {
                 aiStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
-                StartCoroutine(PlayAudioAndLog(bytes, pendingAiText, pendingIsClosing));
+                StartCoroutine(PlayAudioAndLog(bytes, pendingAiText));
                 waitingForText = true;
             }
         };
+        connectToServer();
+    }
 
+    void Update()
+    {
+        #if !UNITY_WEBGL || UNITY_EDITOR
+                websocket?.DispatchMessageQueue();
+        #endif
+
+        if (waitingForButtonPress && AnyControllerButtonPressed())
+        {
+            waitingForButtonPress = false;
+            StartCoroutine(HandleButtonPress());
+        }
+    }
+
+    private bool IsAnyButtonPressed(InputDevice device)
+    {
+        return
+            GetBool(device, CommonUsages.triggerButton) ||
+            GetBool(device, CommonUsages.gripButton) ||
+            GetBool(device, CommonUsages.primaryButton) ||
+            GetBool(device, CommonUsages.secondaryButton) ||
+            GetBool(device, CommonUsages.primary2DAxisClick) ||
+            GetBool(device, CommonUsages.menuButton);
+    }
+
+    private bool GetBool(InputDevice device, InputFeatureUsage<bool> usage)
+    {
+        return device.TryGetFeatureValue(usage, out bool value) && value;
+    }
+
+    private bool AnyControllerButtonPressed()
+    {
+        if (Input.anyKeyDown)
+            return true;
+
+        InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+
+        return IsAnyButtonPressed(leftHand) || IsAnyButtonPressed(rightHand);
+    }
+
+    private IEnumerator HandleButtonPress()
+    {
+        switch (currentStage)
+        {
+            case FlowStage.Instructions:
+                ControllerInstructions1Panel.SetActive(false);
+                LearningMaterialCanvas.SetActive(true);
+                if (learningMaterialController != null)
+                    learningMaterialController.LockInteraction(true); 
+                currentStage = FlowStage.Studying;
+                StartCoroutine(StudyingSequence());
+                break;
+
+            case FlowStage.ControllerInstructions2:
+                ControllerInstructions2Panel.SetActive(false);
+                TaskGoalPanel.SetActive(true);
+                currentStage = FlowStage.TaskGoal;
+                waitingForButtonPress = true;
+                break;
+
+            case FlowStage.TaskGoal:
+                TaskGoalPanel.SetActive(false);
+                currentStage = FlowStage.Interaction;
+                StartCoroutine(StartInteraction());
+                break;
+        }
+        yield break;
+    }
+
+    private IEnumerator StudyingSequence()
+    {
+        yield return new WaitForSeconds(studyDuration);
+
+        LearningMaterialCanvas.SetActive(false);
+
+        TimeOverPopup.SetActive(true);
+        yield return new WaitForSeconds(3.5f);
+            TimeOverPopup.SetActive(false);
+
+        ControllerInstructions2Panel.SetActive(true);
+        currentStage = FlowStage.ControllerInstructions2;
+        waitingForButtonPress = true;
+    }
+
+    private async void connectToServer()
+    {
         await websocket.Connect();
     }
 
-    public async void SendPromptFile()
+    private IEnumerator StartInteraction()
+    {
+        if (websocket.State == WebSocketState.Closed || 
+        websocket.State == WebSocketState.Closing)
+        {
+            Debug.Log("WebSocket closed, reconnecting...");
+            connectToServer();
+        }
+
+        float waited = 0f;
+        while (websocket.State != WebSocketState.Open && waited < 5f)
+        {
+            yield return new WaitForSeconds(0.1f);
+            waited += 0.1f;
+        }
+
+        if (websocket.State != WebSocketState.Open)
+        {
+            Debug.LogError("WebSocket failed to open before SendAgentType");
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < blinkFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            fadingCanvas.alpha = Mathf.Clamp01(elapsed / blinkFadeDuration);
+            yield return null;
+        }
+        fadingCanvas.alpha = 1f;
+        avatarRoot.SetActive(true);
+        yield return new WaitForSeconds(0.5f);
+
+        
+
+        elapsed = 0f;
+        while (elapsed < blinkFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            fadingCanvas.alpha = 1f - Mathf.Clamp01(elapsed / blinkFadeDuration);
+            yield return null;
+        }
+        fadingCanvas.alpha = 0f;
+
+        SendAgentType();
+
+        yield return new WaitForSeconds(delayAfterFadeBeforeSpeak);
+    }
+
+    public async void SendAgentType()
     {
         await System.Threading.Tasks.Task.Delay(500);
         string agentName = sessionLogger.variableTested.Trim().ToLower();
         string configJson = "{\"agent_type\": \"" + agentName + "\"}";
-        await websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
+        websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
         Debug.Log("Sent agent type: " + agentName);
     }
-    private async void SendEndPrompt()
-    {
-        string endJson = "{\"end_prompt\": true}";
-        await websocket.Send(System.Text.Encoding.UTF8.GetBytes(endJson));
-        Debug.Log("Sent end prompt");
-    }
+
+    //private async void SendEndPrompt()
+    //{
+    //    string endJson = "{\"end_prompt\": true}";
+    //    await websocket.Send(System.Text.Encoding.UTF8.GetBytes(endJson));
+    //    Debug.Log("Sent end prompt");
+    //}
+
     private void OnAudioReady(AudioClip clip, float duration, float startTime)
     {
         lastRecordingDuration = duration;
@@ -128,11 +288,10 @@ public class PipelineManager : MonoBehaviour
         return wav;
     }
 
-    private IEnumerator PlayAudioAndLog(byte[] wavBytes, string aiText, bool isClosing)
+    private IEnumerator PlayAudioAndLog(byte[] wavBytes, string aiText)
     {
         float[] samples = WavToFloats(wavBytes, out int channels, out int frequency);
-        AudioClip clip = AudioClip.Create("AI_Response", 
-        samples.Length / channels, channels, frequency, false);
+        AudioClip clip = AudioClip.Create("AI_Response", samples.Length / channels, channels, frequency, false);
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
@@ -142,28 +301,20 @@ public class PipelineManager : MonoBehaviour
         yield return new WaitForSeconds(clip.length);
         sessionLogger.LogAITurn(aiText, clip.length, playStartMs);
 
-        if (isClosing)
+        exchangeCount++;
+        Debug.Log($"[Pipeline] Exchange {exchangeCount}/{MAX_EXCHANGES} complete");
+
+        if (exchangeCount >= MAX_EXCHANGES)
         {
             sessionEnded = true;
             recorder.isLocked = true;
             if (InteractionOverPopup != null)
                 InteractionOverPopup.SetActive(true);
-            Debug.Log("Session ended. Locking Recorder");
+            Debug.Log("Session ended. Locking recorder.");
         }
         else
         {
-            exchangeCount++;
-            Debug.Log($"[Pipeline] Exchange {exchangeCount}/{MAX_EXCHANGES} complete");
-
-            if (exchangeCount >= MAX_EXCHANGES)
-            {
-                recorder.isLocked = true;
-                SendEndPrompt();
-            }
-            else
-            {
-                recorder.isLocked = false;
-            }
+            recorder.isLocked = false;
         }
     }
 
@@ -181,16 +332,6 @@ public class PipelineManager : MonoBehaviour
         }
         return samples;
     }
-
-
-    void Update()
-    {
-        #if !UNITY_WEBGL || UNITY_EDITOR
-        websocket?.DispatchMessageQueue();
-        #endif
-        //Debug.Log("websocket state: " + websocket?.State);
-    }
-
     async void OnDestroy()
     {
         await websocket?.Close();

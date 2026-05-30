@@ -11,6 +11,7 @@ public class LearningMaterialController : MonoBehaviour
     private bool handInZone = false;
     private bool windowOpen = false;
     private bool gestureUsed = false; 
+    private bool interactionLocked = false;
 
 
     private void Start()
@@ -23,6 +24,7 @@ public class LearningMaterialController : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
+        if (interactionLocked) return;
         Debug.Log("[LearningMaterial] OnTriggerEnter hit by: " + other.gameObject.name + " | Tag: " + other.tag);
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand"))
         {
@@ -38,6 +40,7 @@ public class LearningMaterialController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        if (interactionLocked) return;
         if (!handInZone || gestureUsed) return;
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand")) return;
 
@@ -72,6 +75,11 @@ public class LearningMaterialController : MonoBehaviour
             Debug.Log("[LearningMaterial] Window closed");
         }
         Debug.Log("[LearningMaterial] Window " + (windowOpen ? "opened" : "closed"));
+    }
+
+    public void LockInteraction(bool locked)
+    {
+        interactionLocked = locked;
     }
 
     private void OnDrawGizmos()
