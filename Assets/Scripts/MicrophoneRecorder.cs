@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 public class MicrophoneRecorder : MonoBehaviour
 {
-    public System.Action<AudioClip, float, float> OnAudioReady; 
+    public System.Action<AudioClip> OnAudioReady; 
     private AudioClip recordedClip;
     private bool isRecording = false;
     private int sampleRate = 44100;
     private int maxRecordingSeconds = 60;
-    private float recordingStartTime;
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
+    public SessionLogger sessionLogger;
     private string activeMic = "Headset Microphone (Oculus Virtual Audio Device)"; 
     public bool isLocked = false;     
 
@@ -42,12 +42,12 @@ public class MicrophoneRecorder : MonoBehaviour
     {
         if (isRecording) return;
         isRecording = true;
-        recordingStartTime = Time.time;
         recordedClip = Microphone.Start(activeMic, false, maxRecordingSeconds, sampleRate);
         if (OnRecordingStarted != null)
         {
             OnRecordingStarted();
         }
+        sessionLogger.LogUserSpeechStart();
         Debug.Log($"Recording started ({activeMic})");
     }
 
@@ -65,8 +65,6 @@ public class MicrophoneRecorder : MonoBehaviour
             return;
         }
 
-        float duration = Time.time - recordingStartTime;
-
         float[] samples = new float[lastSample * recordedClip.channels];
         recordedClip.GetData(samples, 0);
 
@@ -79,11 +77,12 @@ public class MicrophoneRecorder : MonoBehaviour
             OnRecordingStopped();
         }
 
-        Debug.Log($"Recording stopped: {duration:F1}s");
+        sessionLogger.LogUserSpeechEnd();
+        Debug.Log($"Recording stopped");
         
         if (OnAudioReady != null)
         {
-            OnAudioReady(recordedClip, duration, recordingStartTime);
+            OnAudioReady(recordedClip);
         }
     }
 }

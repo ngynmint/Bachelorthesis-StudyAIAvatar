@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using NativeWebSocket;
-using TMPro;
 using UnityEngine.XR;
 
 public class PipelineManager : MonoBehaviour
@@ -38,7 +37,7 @@ public class PipelineManager : MonoBehaviour
     private float aiStartMs;
     private int exchangeCount = 0;
     private const int MAX_EXCHANGES = 5;
-    private bool sessionEnded = false;
+    //private bool sessionEnded = false;
 
     private enum FlowStage { Instructions, Studying, ControllerInstructions2, TaskGoal, Interaction }
     private FlowStage currentStage = FlowStage.Instructions;
@@ -71,15 +70,15 @@ public class PipelineManager : MonoBehaviour
                 lastUserText = response.stt_text;
                 Debug.Log("AI Text: " + response.text);
                 Debug.Log("User Text: " + response.stt_text);
+                sessionLogger.LogLLMResponseReceived();
 
                 if (lastUserText != null && lastUserText.Trim().Length > 0)
-                    sessionLogger.LogUserTurn(lastUserText, lastRecordingDuration, userStartMs);
+                    sessionLogger.LogUserTurn(lastUserText);
 
                 waitingForText = false;
             }
             else
             {
-                aiStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
                 StartCoroutine(PlayAudioAndLog(bytes, pendingAiText));
                 waitingForText = true;
             }
@@ -209,8 +208,6 @@ public class PipelineManager : MonoBehaviour
         avatarRoot.SetActive(true);
         yield return new WaitForSeconds(0.5f);
 
-        
-
         elapsed = 0f;
         while (elapsed < blinkFadeDuration)
         {
@@ -241,10 +238,8 @@ public class PipelineManager : MonoBehaviour
     //    Debug.Log("Sent end prompt");
     //}
 
-    private void OnAudioReady(AudioClip clip, float duration, float startTime)
+    private void OnAudioReady(AudioClip clip)
     {
-        lastRecordingDuration = duration;
-        userStartMs = (startTime - sessionLogger.GetSessionStartTime()) * 1000f;
         SendAudioToServer(clip);
     }
 
@@ -295,18 +290,19 @@ public class PipelineManager : MonoBehaviour
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
-        float playStartMs = (Time.time - sessionLogger.GetSessionStartTime()) * 1000f;
         avatarAudioSource.Play();
+        sessionLogger.LogAISpeechStart();
 
         yield return new WaitForSeconds(clip.length);
-        sessionLogger.LogAITurn(aiText, clip.length, playStartMs);
+        sessionLogger.LogAITurn(aiText);
+        sessionLogger.LogAISpeechEnd();
 
         exchangeCount++;
         Debug.Log($"[Pipeline] Exchange {exchangeCount}/{MAX_EXCHANGES} complete");
 
         if (exchangeCount >= MAX_EXCHANGES)
         {
-            sessionEnded = true;
+            //sessionEnded = true;
             recorder.isLocked = true;
             if (InteractionOverPopup != null)
                 InteractionOverPopup.SetActive(true);
@@ -343,6 +339,6 @@ public class PipelineManager : MonoBehaviour
         public string text;
         public string error;
         public string stt_text; 
-        public bool is_closing;
+        //public bool is_closing;
     }
 }

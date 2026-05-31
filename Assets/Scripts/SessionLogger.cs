@@ -9,135 +9,141 @@ public class SessionLogger : MonoBehaviour
     public string participantID = " ";
     public string variableTested= " ";
     public Transform avatarTransform;
+
     private string logFilePath;
     private float sessionStartTime;
+    private double sessionStartUnix;
     private bool lastGazeState = false;
     private bool materialOpen = false;
-    private float materialOpenTime = 0f;
-    public float GetSessionStartTime()
-    {
-        return sessionStartTime;
-    }
-    public GameObject gazeDebugDot;
-
 
     void Awake()
     {
         sessionStartTime = Time.time;
+        sessionStartUnix = (double)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
+
         string logDir = Path.Combine(Application.dataPath, "Logger");
         Directory.CreateDirectory(logDir);
 
         string fileName = $"Session_{participantID}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
         logFilePath = Path.Combine(logDir, fileName);
 
-        File.WriteAllText(logFilePath, "time_s,event_type,value\n");
-        LogEvent("SESSION_START", participantID);
-        LogEvent("VARIABLE", variableTested);
+        File.WriteAllText(logFilePath, "unix_time,time_ms,variable,value\n");
+        LogEvent("PARTICIPANT_ID", participantID);
+        LogEvent("VARIABLE_TESTED", variableTested);
         Debug.Log("[Logger] CSV Log @: " + logFilePath);
     }
 
-    private string FormatFloat(float value)
+    //FORMAT THINGS
+    private string FormatFloat(float value) => value.ToString("F2", CultureInfo.InvariantCulture);
+
+    private float GetTimeNow() => Time.time - sessionStartTime;
+    
+    private string FormatDouble(double value) => value.ToString("F3", CultureInfo.InvariantCulture);
+
+    private string EscapeCsv(string value) // ensure no breaking csv?
     {
-        return value.ToString("F2", CultureInfo.InvariantCulture);
+        if (string.IsNullOrEmpty(value)) return "";
+        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        return value;
     }
-    private float GetTimeNow()
+
+    //LOGGING
+    private void LogEvent(string variable, string value = "")
     {
-        return Time.time - sessionStartTime;
-    }
-    private void LogEvent(string eventType, string value = "")
-    {
-        string line = FormatFloat(GetTimeNow()) + "," + eventType + "," + value + "\n";
+        double unixTime = sessionStartUnix + GetTimeNow();
+        float timeMs = GetTimeNow() * 1000f;
+        string line = $"{FormatDouble(unixTime)},{FormatFloat(timeMs)},{variable},{EscapeCsv(value)}\n";
         File.AppendAllText(logFilePath, line);
     }
-    private bool IsGazing()
+
+    private void LogEventAtTime(float eventTime, string variable, string value = "")
     {
-        if (avatarTransform == null)
-        {
-            return false;
-        }
-
-        Transform cam = Camera.main.transform;
-
-        Ray ray = new Ray(cam.position, cam.forward);
-        RaycastHit hit;
-
-        bool didHit = Physics.Raycast(ray, out hit, 100f);
-
-        if (Physics.Raycast(ray, out hit, 100f))
-        {
-            Transform t = hit.transform;
-
-            if (t == avatarTransform)
-            {
-                return true;
-            }
-
-            while (t.parent != null)
-            {
-                t = t.parent;
-
-                if (t == avatarTransform)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        double unixTime = sessionStartUnix + eventTime;
+        float timeMs = eventTime * 1000f;
+        string line = $"{FormatDouble(unixTime)},{FormatFloat(timeMs)},{variable},{EscapeCsv(value)}\n";
+        File.AppendAllText(logFilePath, line);
     }
 
     void Update()
     {
         bool gazing = IsGazing();
 
-        if (gazeDebugDot != null)
-            {
-                gazeDebugDot.SetActive(gazing);
-            }
         if (gazing != lastGazeState)
         {
-            if (gazing)
-            {
-                LogEvent("GAZE_ON", "");
-            }
-            else
-            {
-                LogEvent("GAZE_OFF", "");
-            }
-
+            LogEvent("GAZE", gazing ? "ON" : "OFF");
             lastGazeState = gazing;
         }
     }
 
-    public void LogUserTurn(string userText, float recordingDuration, float userStartMs)
+    // USER EVENTS
+    public void LogUserSpeechStart()
     {
-        float userStartS = userStartMs / 1000f;
-        string speechLine = FormatFloat(userStartS) + ",USER_SPEECH,\"" + userText + "\"\n";
-        File.AppendAllText(logFilePath, speechLine);
-        string durationLine = FormatFloat(userStartS) + ",EXPLANATION_DURATION," + FormatFloat(recordingDuration) + "\n";
-        File.AppendAllText(logFilePath, durationLine);
+        LogEvent("USER_SPEECH", "START");
     }
 
-    public void LogAITurn(string aiText, float aiDuration, float aiStartMs)
+    public void LogUserSpeechEnd()
     {
-        float aiStartS = aiStartMs / 1000f;
-        string responseLine = FormatFloat(aiStartS) + ",AI_RESPONSE,\"" + aiText + "\"\n";
-        File.AppendAllText(logFilePath, responseLine);
-        string durationLine = FormatFloat(aiStartS) + ",AI_DURATION," + FormatFloat(aiDuration) + "\n";
-        File.AppendAllText(logFilePath, durationLine);
+        LogEvent("USER_SPEECH", "END");
     }
 
+    public void LogUserTurn(string userText)
+    {
+        LogEvent("USER_SPEECH", userText);
+    }
+
+    // AI EVENTS
+    public void LogLLMResponseReceived()
+    {
+        LogEvent("LLM_RESPONSE_RECEIVED");
+    }
+
+    public void LogAISpeechStart()
+    {
+        LogEvent("AI_SPEECH", "START");
+    }
+
+    public void LogAISpeechEnd()
+    {
+        LogEvent("AI_SPEECH", "END");
+    }
+
+    public void LogAITurn(string aiText)
+    {
+        LogEvent("AI_SPEECH", aiText);
+    }
+
+    //GAZE
+    private bool IsGazing()
+    {
+        if (avatarTransform == null) return false;
+        if (IsOutOfView()) return false;
+        return true;
+    }
+
+    private bool IsOutOfView()
+    {
+        if (avatarTransform == null) return true;
+        Renderer[] renderers = avatarTransform.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return true;
+        foreach (var r in renderers)
+        {
+            if (r.isVisible)
+                return false;
+        }
+        return true;
+    }
+
+    //MATERIAL 
     public void LogMaterialOpened()
     {
         materialOpen = true;
-        materialOpenTime = GetTimeNow();
-        LogEvent("MATERIAL_OPEN", "");
+        LogEvent("MATERIAL", "OPEN");
     }
     public void LogMaterialClosed()
     {
         if (!materialOpen) return;
         materialOpen = false;
-        float duration = GetTimeNow() - materialOpenTime;
-        LogEvent("MATERIAL_CLOSE", FormatFloat(duration));
+        LogEvent("MATERIAL", "CLOSE");
     }
 }

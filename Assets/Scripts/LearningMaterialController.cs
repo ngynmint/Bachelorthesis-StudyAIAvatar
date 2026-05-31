@@ -74,7 +74,6 @@ public class LearningMaterialController : MonoBehaviour
             sessionLogger.LogMaterialClosed();
             Debug.Log("[LearningMaterial] Window closed");
         }
-        Debug.Log("[LearningMaterial] Window " + (windowOpen ? "opened" : "closed"));
     }
 
     public void LockInteraction(bool locked)
