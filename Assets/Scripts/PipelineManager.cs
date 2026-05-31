@@ -35,8 +35,8 @@ public class PipelineManager : MonoBehaviour
     private float lastRecordingDuration = 0f;
     private float userStartMs;
     private float aiStartMs;
-    private int exchangeCount = 0;
-    private const int MAX_EXCHANGES = 5;
+    private int interactionCount = 0;
+    private const int MAX_INTERACTIONS = 6;
     //private bool sessionEnded = false;
 
     private enum FlowStage { Instructions, Studying, ControllerInstructions2, TaskGoal, Interaction }
@@ -70,11 +70,12 @@ public class PipelineManager : MonoBehaviour
                 lastUserText = response.stt_text;
                 Debug.Log("AI Text: " + response.text);
                 Debug.Log("User Text: " + response.stt_text);
-                sessionLogger.LogLLMResponseReceived();
 
                 if (lastUserText != null && lastUserText.Trim().Length > 0)
+                {
                     sessionLogger.LogUserTurn(lastUserText);
-
+                    sessionLogger.LogLLMResponseReceived();
+                }    
                 waitingForText = false;
             }
             else
@@ -135,6 +136,7 @@ public class PipelineManager : MonoBehaviour
                 LearningMaterialCanvas.SetActive(true);
                 if (learningMaterialController != null)
                     learningMaterialController.LockInteraction(true); 
+                sessionLogger.LogStudyStart();
                 currentStage = FlowStage.Studying;
                 StartCoroutine(StudyingSequence());
                 break;
@@ -160,6 +162,7 @@ public class PipelineManager : MonoBehaviour
         yield return new WaitForSeconds(studyDuration);
 
         LearningMaterialCanvas.SetActive(false);
+        sessionLogger.LogStudyEnd();
 
         TimeOverPopup.SetActive(true);
         yield return new WaitForSeconds(3.5f);
@@ -176,7 +179,8 @@ public class PipelineManager : MonoBehaviour
     }
 
     private IEnumerator StartInteraction()
-    {
+    {   
+        sessionLogger.LogInteractionStart();
         if (websocket.State == WebSocketState.Closed || 
         websocket.State == WebSocketState.Closing)
         {
@@ -297,11 +301,12 @@ public class PipelineManager : MonoBehaviour
         sessionLogger.LogAITurn(aiText);
         sessionLogger.LogAISpeechEnd();
 
-        exchangeCount++;
-        Debug.Log($"[Pipeline] Exchange {exchangeCount}/{MAX_EXCHANGES} complete");
+        interactionCount++;
+        Debug.Log($"[Pipeline] Interaction {interactionCount}/{MAX_INTERACTIONS} complete");
 
-        if (exchangeCount >= MAX_EXCHANGES)
+        if (interactionCount >= MAX_INTERACTIONS)
         {
+            sessionLogger.LogInteractionEnd();
             //sessionEnded = true;
             recorder.isLocked = true;
             if (InteractionOverPopup != null)

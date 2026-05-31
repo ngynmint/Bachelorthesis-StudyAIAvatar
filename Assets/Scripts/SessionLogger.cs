@@ -34,7 +34,7 @@ public class SessionLogger : MonoBehaviour
     }
 
     //FORMAT THINGS
-    private string FormatFloat(float value) => value.ToString("F2", CultureInfo.InvariantCulture);
+    private string FormatFloat(float value) => value.ToString("F3", CultureInfo.InvariantCulture);
 
     private float GetTimeNow() => Time.time - sessionStartTime;
     
@@ -74,6 +74,26 @@ public class SessionLogger : MonoBehaviour
             LogEvent("GAZE", gazing ? "ON" : "OFF");
             lastGazeState = gazing;
         }
+    }
+
+    public void LogStudyStart()
+    {
+        LogEvent("STUDY_PHASE", "START");
+    }
+
+    public void LogStudyEnd()
+    {
+        LogEvent("STUDY_PHASE", "END");
+    }
+
+    public void LogInteractionStart()
+    {
+        LogEvent("INTERACTION_PHASE", "START");
+    }
+
+    public void LogInteractionEnd()
+    {
+        LogEvent("INTERACTION_PHASE", "END");
     }
 
     // USER EVENTS
