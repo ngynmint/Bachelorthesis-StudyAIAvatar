@@ -27,23 +27,22 @@ public class SessionLogger : MonoBehaviour
         string fileName = $"Session_{participantID}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
         logFilePath = Path.Combine(logDir, fileName);
 
-        File.WriteAllText(logFilePath, "unix_time,time_ms,variable,value\n");
+        File.WriteAllText(logFilePath, "unix_time;time_ms;variable;value\n");
         LogEvent("PARTICIPANT_ID", participantID);
         LogEvent("VARIABLE_TESTED", variableTested);
         Debug.Log("[Logger] CSV Log @: " + logFilePath);
     }
 
     //FORMAT THINGS
-    private string FormatFloat(float value) => value.ToString("F3", CultureInfo.InvariantCulture);
-
+    private string FormatFloat(float value) => value.ToString("F3", new CultureInfo("de-DE"));
     private float GetTimeNow() => Time.time - sessionStartTime;
-    
-    private string FormatDouble(double value) => value.ToString("F3", CultureInfo.InvariantCulture);
 
-    private string EscapeCsv(string value) // ensure no breaking csv?
+    private string FormatDouble(double value) => value.ToString("F3", new CultureInfo("de-DE"));
+
+    private string EscapeCsv(string value)
     {
         if (string.IsNullOrEmpty(value)) return "";
-        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+        if (value.Contains(";") || value.Contains("\"") || value.Contains("\n")) 
             return "\"" + value.Replace("\"", "\"\"") + "\"";
         return value;
     }
@@ -53,15 +52,11 @@ public class SessionLogger : MonoBehaviour
     {
         double unixTime = sessionStartUnix + GetTimeNow();
         float timeMs = GetTimeNow() * 1000f;
-        string line = $"{FormatDouble(unixTime)},{FormatFloat(timeMs)},{variable},{EscapeCsv(value)}\n";
-        File.AppendAllText(logFilePath, line);
-    }
-
-    private void LogEventAtTime(float eventTime, string variable, string value = "")
-    {
-        double unixTime = sessionStartUnix + eventTime;
-        float timeMs = eventTime * 1000f;
-        string line = $"{FormatDouble(unixTime)},{FormatFloat(timeMs)},{variable},{EscapeCsv(value)}\n";
+        string line =
+            $"{FormatDouble(unixTime)};" +
+            $"{FormatFloat(timeMs)};" +
+            $"{variable};" +
+            $"{EscapeCsv(value)}\n";
         File.AppendAllText(logFilePath, line);
     }
 

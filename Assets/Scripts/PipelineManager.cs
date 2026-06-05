@@ -160,6 +160,13 @@ public class PipelineManager : MonoBehaviour
     private IEnumerator StudyingSequence()
     {
         yield return new WaitForSeconds(studyDuration);
+        float remaining = studyDuration;
+        while (remaining > 0f)
+        {
+            Debug.Log($"Study time remaining: {Mathf.CeilToInt(remaining)} seconds");
+            yield return new WaitForSeconds(1f);
+            remaining -= 1f;
+        }
 
         LearningMaterialCanvas.SetActive(false);
         sessionLogger.LogStudyEnd();
