@@ -28,6 +28,12 @@ public class PipelineManager : MonoBehaviour
     public CanvasGroup fadingCanvas;
     public float blinkFadeDuration = 0.4f;
 
+    [Header("Proceed Buttons")]
+    public GameObject StartLearningButton;
+    public GameObject ContinueButton;
+    public GameObject StartInteractionButton;
+    public float panelLockDuration = 4f;
+
     public float studyDuration = 900f;
 
     private WebSocket websocket;
@@ -42,6 +48,7 @@ public class PipelineManager : MonoBehaviour
     private enum FlowStage { Instructions, Studying, ControllerInstructions2, TaskGoal, Interaction }
     private FlowStage currentStage = FlowStage.Instructions;
     private bool waitingForButtonPress = false;
+    private bool panelLocked = true;
     async void Start()
     { 
         fadingCanvas.alpha = 0f;
@@ -51,6 +58,12 @@ public class PipelineManager : MonoBehaviour
         recorder.isLocked = true;
 
         waitingForButtonPress = true;
+
+        sessionLogger.LogPanelOpen("ControllerInstructions1");
+        StartCoroutine(LockThenReveal(StartLearningButton, () =>
+        {
+            waitingForButtonPress = true;
+        }));
 
         websocket = new WebSocket("ws://localhost:8765");
         websocket.OnOpen += () => Debug.Log("Server connected");
@@ -98,6 +111,67 @@ public class PipelineManager : MonoBehaviour
             waitingForButtonPress = false;
             StartCoroutine(HandleButtonPress());
         }
+        HandleKeyboardPanelRecovery();
+    }
+    private void HandleKeyboardPanelRecovery()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            RecoverToPanel(1); //ControllerInstructions1
+        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            RecoverToPanel(2); //ControllerInstructions2
+        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            RecoverToPanel(3);
+    }
+
+    private void RecoverToPanel(int panelNumber)
+    {
+        StopAllCoroutines();
+        waitingForButtonPress = false;
+        panelLocked = true;
+ 
+        ControllerInstructions1Panel.SetActive(false);
+        ControllerInstructions2Panel.SetActive(false);
+        TaskGoalPanel.SetActive(false);
+        LearningMaterialCanvas.SetActive(false);
+        if (StartLearningButton != null) StartLearningButton.SetActive(false);
+        if (TimeOverPopup != null) TimeOverPopup.SetActive(false);
+        if (ContinueButton != null) ContinueButton.SetActive(false);
+        if (StartInteractionButton != null) StartInteractionButton.SetActive(false);
+ 
+        sessionLogger.LogPanelRecovery(panelNumber);
+ 
+        switch (panelNumber)
+        {
+            case 1:
+                sessionLogger.LogPanelOpen("ControllerInstructions1");
+                ControllerInstructions1Panel.SetActive(true);
+                currentStage = FlowStage.Instructions;
+                StartCoroutine(LockThenReveal(StartLearningButton, () => waitingForButtonPress = true));
+                break;
+ 
+            case 2:
+                sessionLogger.LogPanelOpen("ControllerInstructions2");
+                ControllerInstructions2Panel.SetActive(true);
+                currentStage = FlowStage.ControllerInstructions2;
+                StartCoroutine(LockThenReveal(ContinueButton, () => waitingForButtonPress = true));
+                break;
+ 
+            case 3:
+                sessionLogger.LogPanelOpen("TaskGoal");
+                TaskGoalPanel.SetActive(true);
+                currentStage = FlowStage.TaskGoal;
+                StartCoroutine(LockThenReveal(StartInteractionButton, () => waitingForButtonPress = true));
+                break;
+        }
+    }
+
+    private IEnumerator LockThenReveal(GameObject button, System.Action onUnlocked)
+    {
+        panelLocked = true;
+        yield return new WaitForSeconds(panelLockDuration);
+        if (button != null) button.SetActive(true);
+        panelLocked = false;
+        onUnlocked?.Invoke();
     }
 
     private bool IsAnyButtonPressed(InputDevice device)
@@ -133,9 +207,10 @@ public class PipelineManager : MonoBehaviour
         {
             case FlowStage.Instructions:
                 ControllerInstructions1Panel.SetActive(false);
+                sessionLogger.LogPanelClose("ControllerInstructions1");
+                if (StartLearningButton != null) StartLearningButton.SetActive(false);
                 LearningMaterialCanvas.SetActive(true);
-                if (learningMaterialController != null)
-                    learningMaterialController.LockInteraction(true); 
+                if (learningMaterialController != null) learningMaterialController.LockInteraction(true); 
                 sessionLogger.LogStudyStart();
                 currentStage = FlowStage.Studying;
                 StartCoroutine(StudyingSequence());
@@ -143,13 +218,18 @@ public class PipelineManager : MonoBehaviour
 
             case FlowStage.ControllerInstructions2:
                 ControllerInstructions2Panel.SetActive(false);
+                sessionLogger.LogPanelClose("ControllerInstructions2");
+                if (ContinueButton != null) ContinueButton.SetActive(false);
                 TaskGoalPanel.SetActive(true);
+                sessionLogger.LogPanelOpen("TaskGoal");
                 currentStage = FlowStage.TaskGoal;
-                waitingForButtonPress = true;
+                StartCoroutine(LockThenReveal(StartInteractionButton, () => waitingForButtonPress = true));
                 break;
 
             case FlowStage.TaskGoal:
                 TaskGoalPanel.SetActive(false);
+                sessionLogger.LogPanelClose("TaskGoal");
+                if (StartInteractionButton != null) StartInteractionButton.SetActive(false);
                 currentStage = FlowStage.Interaction;
                 StartCoroutine(StartInteraction());
                 break;
@@ -160,24 +240,18 @@ public class PipelineManager : MonoBehaviour
     private IEnumerator StudyingSequence()
     {
         yield return new WaitForSeconds(studyDuration);
-        float remaining = studyDuration;
-        while (remaining > 0f)
-        {
-            Debug.Log($"Study time remaining: {Mathf.CeilToInt(remaining)} seconds");
-            yield return new WaitForSeconds(1f);
-            remaining -= 1f;
-        }
 
         LearningMaterialCanvas.SetActive(false);
         sessionLogger.LogStudyEnd();
 
         TimeOverPopup.SetActive(true);
         yield return new WaitForSeconds(3.5f);
-            TimeOverPopup.SetActive(false);
+        TimeOverPopup.SetActive(false);
 
         ControllerInstructions2Panel.SetActive(true);
+        sessionLogger.LogPanelOpen("ControllerInstructions2");
         currentStage = FlowStage.ControllerInstructions2;
-        waitingForButtonPress = true;
+        StartCoroutine(LockThenReveal(ContinueButton, () => waitingForButtonPress = true));
     }
 
     private async void connectToServer()

@@ -213,7 +213,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &20788320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11161,6 +11161,10 @@ MonoBehaviour:
   InteractionOverPopup: {fileID: 3483918}
   fadingCanvas: {fileID: 372909295}
   blinkFadeDuration: 2.5
+  StartLearningButton: {fileID: 1360238655}
+  ContinueButton: {fileID: 1714845779}
+  StartInteractionButton: {fileID: 2056052354}
+  panelLockDuration: 4
   studyDuration: 5
 --- !u!4 &1661713563
 Transform:
@@ -12023,7 +12027,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2056052355
 RectTransform:
   m_ObjectHideFlags: 0

@@ -91,6 +91,21 @@ public class SessionLogger : MonoBehaviour
         LogEvent("INTERACTION_PHASE", "END");
     }
 
+    public void LogPanelOpen(string panelName)
+    {
+        LogEvent("PANEL_" + panelName.ToUpper(), "OPEN");
+    }
+ 
+    public void LogPanelClose(string panelName)
+    {
+        LogEvent("PANEL_" + panelName.ToUpper(), "CLOSE");
+    }
+ 
+    public void LogPanelRecovery(int panelNumber)
+    {
+        LogEvent("PANEL_RECOVERY", panelNumber.ToString());
+    }
+
     // USER EVENTS
     public void LogUserSpeechStart()
     {
