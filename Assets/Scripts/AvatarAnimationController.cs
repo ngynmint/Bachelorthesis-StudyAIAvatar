@@ -6,9 +6,18 @@ public class AvatarAnimationController : MonoBehaviour
     public Animator animator;
     public AudioSource avatarAudioSource;
 
+    [Header("Eye Direction Settings")]
+    [SerializeField] private float minInterval = 5f;
+    [SerializeField] private float maxInterval = 10f;
     private bool isTalking = false;
     private string lastLoggedState = "";
-
+    private float eyeDirectionTimer;
+    private static readonly string[] eyeDirectionTriggers = { "PlayLeft", "PlayRight", "PlayDown" };
+    
+    void Start()
+    {
+        WhenNextEyeDirection();
+    }
     void Update()
     {
         bool audioPlaying = false;
@@ -27,6 +36,14 @@ public class AvatarAnimationController : MonoBehaviour
             StopTalking();
         }
 
+        eyeDirectionTimer -= Time.deltaTime;
+        if (eyeDirectionTimer <= 0f)
+        {
+            string chosen = eyeDirectionTriggers[Random.Range(0, eyeDirectionTriggers.Length)];
+            animator.SetTrigger(chosen);
+            Debug.Log($"[EyeDirection] Playing: {chosen}");
+            WhenNextEyeDirection();
+        }
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(1);
         string currentState = "loading...";
@@ -48,6 +65,12 @@ public class AvatarAnimationController : MonoBehaviour
         }
     }
 
+    private void WhenNextEyeDirection()
+    {
+        eyeDirectionTimer = Random.Range(minInterval, maxInterval);
+        Debug.Log($"[EyeDirection] Next direction in {eyeDirectionTimer:F1}s");
+    }
+    
     private void StartTalking()
     {
         isTalking = true;

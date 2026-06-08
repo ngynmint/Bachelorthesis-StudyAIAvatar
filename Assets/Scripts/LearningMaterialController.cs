@@ -16,8 +16,6 @@ public class LearningMaterialController : MonoBehaviour
 
     private void Start()
     {
-        if (learningMaterialWindow != null)
-            learningMaterialWindow.SetActive(true);
         windowOpen = true;
         if (pdfViewer != null)
             pdfViewer.LoadPDF();

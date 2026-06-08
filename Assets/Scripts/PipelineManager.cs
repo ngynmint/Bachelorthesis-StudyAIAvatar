@@ -57,8 +57,6 @@ public class PipelineManager : MonoBehaviour
         recorder.OnAudioReady += OnAudioReady; 
         recorder.isLocked = true;
 
-        waitingForButtonPress = true;
-
         sessionLogger.LogPanelOpen("ControllerInstructions1");
         StartCoroutine(LockThenReveal(StartLearningButton, () =>
         {
@@ -165,11 +163,11 @@ public class PipelineManager : MonoBehaviour
         }
     }
 
-    private IEnumerator LockThenReveal(GameObject button, System.Action onUnlocked)
+    private IEnumerator LockThenReveal(GameObject label, System.Action onUnlocked)
     {
         panelLocked = true;
         yield return new WaitForSeconds(panelLockDuration);
-        if (button != null) button.SetActive(true);
+        if (label != null) label.SetActive(true);
         panelLocked = false;
         onUnlocked?.Invoke();
     }
