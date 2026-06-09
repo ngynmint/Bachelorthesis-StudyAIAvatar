@@ -23,6 +23,7 @@ public class PipelineManager : MonoBehaviour
     public GameObject ControllerInstructions2Panel; 
     public GameObject TaskGoalPanel;           
     public GameObject InteractionOverPopup;
+    public GameObject taskBoard;
     
     [Header("Blink Transition")]
     public CanvasGroup fadingCanvas;
@@ -32,7 +33,9 @@ public class PipelineManager : MonoBehaviour
     public GameObject StartLearningButton;
     public GameObject ContinueButton;
     public GameObject StartInteractionButton;
-    public float panelLockDuration = 4f;
+    public float startLearningLockDuration = 4f;
+    public float continueLockDuration = 4f;
+    public float startInteractionLockDuration = 4f;
 
     public float studyDuration = 900f;
 
@@ -58,11 +61,7 @@ public class PipelineManager : MonoBehaviour
         recorder.isLocked = true;
 
         sessionLogger.LogPanelOpen("ControllerInstructions1");
-        StartCoroutine(LockThenReveal(StartLearningButton, () =>
-        {
-            waitingForButtonPress = true;
-        }));
-
+        StartCoroutine(LockThenReveal(StartLearningButton, startLearningLockDuration, () => waitingForButtonPress = true));
         websocket = new WebSocket("ws://localhost:8765");
         websocket.OnOpen += () => Debug.Log("Server connected");
         websocket.OnError += (e) => Debug.LogError($"WebSocket Error: {e}");
@@ -144,29 +143,29 @@ public class PipelineManager : MonoBehaviour
                 sessionLogger.LogPanelOpen("ControllerInstructions1");
                 ControllerInstructions1Panel.SetActive(true);
                 currentStage = FlowStage.Instructions;
-                StartCoroutine(LockThenReveal(StartLearningButton, () => waitingForButtonPress = true));
+                StartCoroutine(LockThenReveal(StartLearningButton, startLearningLockDuration, () => { waitingForButtonPress = true; }));
                 break;
  
             case 2:
                 sessionLogger.LogPanelOpen("ControllerInstructions2");
                 ControllerInstructions2Panel.SetActive(true);
                 currentStage = FlowStage.ControllerInstructions2;
-                StartCoroutine(LockThenReveal(ContinueButton, () => waitingForButtonPress = true));
+                StartCoroutine(LockThenReveal(ContinueButton, continueLockDuration, () => { waitingForButtonPress = true; }));
                 break;
  
             case 3:
                 sessionLogger.LogPanelOpen("TaskGoal");
                 TaskGoalPanel.SetActive(true);
                 currentStage = FlowStage.TaskGoal;
-                StartCoroutine(LockThenReveal(StartInteractionButton, () => waitingForButtonPress = true));
+                StartCoroutine(LockThenReveal(StartInteractionButton, startInteractionLockDuration, () => { waitingForButtonPress = true; }));
                 break;
         }
     }
 
-    private IEnumerator LockThenReveal(GameObject label, System.Action onUnlocked)
+    private IEnumerator LockThenReveal(GameObject label, float lockDuration, System.Action onUnlocked)
     {
         panelLocked = true;
-        yield return new WaitForSeconds(panelLockDuration);
+        yield return new WaitForSeconds(lockDuration);
         if (label != null) label.SetActive(true);
         panelLocked = false;
         onUnlocked?.Invoke();
@@ -236,7 +235,7 @@ public class PipelineManager : MonoBehaviour
                 TaskGoalPanel.SetActive(true);
                 sessionLogger.LogPanelOpen("TaskGoal");
                 currentStage = FlowStage.TaskGoal;
-                StartCoroutine(LockThenReveal(StartInteractionButton, () => waitingForButtonPress = true));
+                StartCoroutine(LockThenReveal(StartInteractionButton, startInteractionLockDuration, () => { waitingForButtonPress = true; }));
                 break;
 
             case FlowStage.TaskGoal:
@@ -264,7 +263,7 @@ public class PipelineManager : MonoBehaviour
         ControllerInstructions2Panel.SetActive(true);
         sessionLogger.LogPanelOpen("ControllerInstructions2");
         currentStage = FlowStage.ControllerInstructions2;
-        StartCoroutine(LockThenReveal(ContinueButton, () => waitingForButtonPress = true));
+        StartCoroutine(LockThenReveal(ContinueButton, continueLockDuration, () => { waitingForButtonPress = true; }));
     }
 
     private async void connectToServer()
@@ -304,6 +303,7 @@ public class PipelineManager : MonoBehaviour
         }
         fadingCanvas.alpha = 1f;
         avatarRoot.SetActive(true);
+        taskBoard.SetActive(true);      
         if (learningMaterialController != null) learningMaterialController.LockInteraction(false);
         yield return new WaitForSeconds(0.5f);
 
