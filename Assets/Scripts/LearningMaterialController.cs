@@ -20,6 +20,15 @@ public class LearningMaterialController : MonoBehaviour
         if (pdfViewer != null)
             pdfViewer.LoadPDF();
     }
+
+    void Update()
+    {
+        if (!windowOpen || interactionLocked)
+        {
+            Input.ResetInputAxes();
+            return;
+        }
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (interactionLocked) return;

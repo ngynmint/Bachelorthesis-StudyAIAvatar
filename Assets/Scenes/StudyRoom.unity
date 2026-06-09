@@ -2365,15 +2365,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.04
+      value: 1.125
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.29
+      value: 0.386
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.4
+      value: -0.374
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2668,8 +2668,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Whenever you're ready, \nuse to Trigger- or Grabbutton to begin the 15min
-    learning session."
+  m_text: "Whenever you're ready, \nuse the Triggerbutton to begin the 15min learning
+    session."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3229,7 +3229,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.632
+      value: -0.509
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3237,7 +3237,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.395
+      value: 2.437
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3617,7 +3617,7 @@ MonoBehaviour:
   sessionLogger: {fileID: 1571387770}
   learningMaterialController: {fileID: 661453927}
   avatarRoot: {fileID: 423800924}
-  delayAfterFadeBeforeSpeak: 0.5
+  delayAfterFadeBeforeSpeak: 0
   ControllerInstructions1Panel: {fileID: 1386067182}
   LearningMaterialCanvas: {fileID: 2097874487}
   TimeOverPopup: {fileID: 2074287026}
@@ -3754,7 +3754,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Use the Trigger- or Grabbutton to continue.
+  m_text: Use the Triggerbutton to continue.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4739,8 +4739,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Whenever you're ready, \nuse the Trigger- or Grabbutton to start your
-    5 interaction rounds with the avatar."
+  m_text: "Whenever you're ready, \nuse the Triggerbutton to start your 5 interaction
+    rounds with the avatar."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

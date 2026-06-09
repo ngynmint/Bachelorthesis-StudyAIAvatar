@@ -12,14 +12,14 @@ public class MicrophoneRecorder : MonoBehaviour
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
     public SessionLogger sessionLogger;
-    private string activeMic = "";  //Headset Microphone (Oculus Virtual Audio Device)
+    private string activeMic = "Headset Microphone (Oculus Virtual Audio Device)";  //Headset Microphone (Oculus Virtual Audio Device)
     public bool isLocked = false;     
 
     void Start()
     {
         if (Microphone.devices.Length > 0)
         {
-            activeMic = Microphone.devices[0];
+            //activeMic = Microphone.devices[0];
             Debug.Log($"Using microphone: {activeMic}");
         }
         else

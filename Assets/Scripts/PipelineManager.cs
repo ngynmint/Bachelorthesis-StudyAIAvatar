@@ -177,8 +177,8 @@ public class PipelineManager : MonoBehaviour
         if (device.TryGetFeatureValue(CommonUsages.trigger, out float triggerVal) && triggerVal > 0.7f)
             return true;
 
-        if (device.TryGetFeatureValue(CommonUsages.grip, out float gripVal) && gripVal > 0.7f)
-            return true;
+        //if (device.TryGetFeatureValue(CommonUsages.grip, out float gripVal) && gripVal > 0.7f)
+            //return true;
 
         device.TryGetFeatureValue(CommonUsages.primaryTouch, out bool primaryTouched);
         device.TryGetFeatureValue(CommonUsages.secondaryTouch, out bool secondaryTouched);
@@ -205,8 +205,7 @@ public class PipelineManager : MonoBehaviour
 
     private bool AnyControllerButtonPressed()
     {
-        //if (Input.anyKeyDown)
-        //    return true;
+        if (Input.anyKeyDown) return true;
 
         InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
         InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
