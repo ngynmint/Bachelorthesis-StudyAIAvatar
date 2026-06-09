@@ -5,7 +5,7 @@ public class LearningMaterialController : MonoBehaviour
 {
     public GameObject learningMaterialWindow;
     public PdfViewerUI pdfViewer;
-    public float reachThreshold = 0.3f;
+    public float reachThreshold = 0.15f;
     public SessionLogger sessionLogger;
     private Vector3 handStartPosition;
     private bool handInZone = false;

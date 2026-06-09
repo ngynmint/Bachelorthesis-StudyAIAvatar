@@ -156,9 +156,14 @@ public class SessionLogger : MonoBehaviour
         if (avatarTransform == null) return true;
         Renderer[] renderers = avatarTransform.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return true;
+        
+        Camera cam = Camera.main;
+        if (cam == null) return true;
+
         foreach (var r in renderers)
         {
-            if (r.isVisible)
+            if (GeometryUtility.TestPlanesAABB(
+                GeometryUtility.CalculateFrustumPlanes(cam), r.bounds))
                 return false;
         }
         return true;

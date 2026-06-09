@@ -174,13 +174,28 @@ public class PipelineManager : MonoBehaviour
 
     private bool IsAnyButtonPressed(InputDevice device)
     {
-        return
-            GetBool(device, CommonUsages.triggerButton) ||
-            GetBool(device, CommonUsages.gripButton) ||
-            GetBool(device, CommonUsages.primaryButton) ||
-            GetBool(device, CommonUsages.secondaryButton) ||
-            GetBool(device, CommonUsages.primary2DAxisClick) ||
-            GetBool(device, CommonUsages.menuButton);
+        if (device.TryGetFeatureValue(CommonUsages.trigger, out float triggerVal) && triggerVal > 0.7f)
+            return true;
+
+        if (device.TryGetFeatureValue(CommonUsages.grip, out float gripVal) && gripVal > 0.7f)
+            return true;
+
+        device.TryGetFeatureValue(CommonUsages.primaryTouch, out bool primaryTouched);
+        device.TryGetFeatureValue(CommonUsages.secondaryTouch, out bool secondaryTouched);
+
+        if (GetBool(device, CommonUsages.primaryButton) && !primaryTouched)
+            return true;
+
+        if (GetBool(device, CommonUsages.secondaryButton) && !secondaryTouched)
+            return true;
+
+        if (GetBool(device, CommonUsages.primary2DAxisClick))
+            return true;
+
+        if (GetBool(device, CommonUsages.menuButton))
+            return true;
+
+        return false;
     }
 
     private bool GetBool(InputDevice device, InputFeatureUsage<bool> usage)
@@ -190,8 +205,8 @@ public class PipelineManager : MonoBehaviour
 
     private bool AnyControllerButtonPressed()
     {
-        if (Input.anyKeyDown)
-            return true;
+        //if (Input.anyKeyDown)
+        //    return true;
 
         InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
         InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
@@ -289,6 +304,7 @@ public class PipelineManager : MonoBehaviour
         }
         fadingCanvas.alpha = 1f;
         avatarRoot.SetActive(true);
+        if (learningMaterialController != null) learningMaterialController.LockInteraction(false);
         yield return new WaitForSeconds(0.5f);
 
         elapsed = 0f;
