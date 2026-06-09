@@ -59,6 +59,7 @@ public class PipelineManager : MonoBehaviour
         fadingCanvas.blocksRaycasts = false;
         recorder.OnAudioReady += OnAudioReady; 
         recorder.isLocked = true;
+        learningMaterialController.LockInteraction(true); 
 
         sessionLogger.LogPanelOpen("ControllerInstructions1");
         StartCoroutine(LockThenReveal(StartLearningButton, startLearningLockDuration, () => waitingForButtonPress = true));
@@ -257,7 +258,7 @@ public class PipelineManager : MonoBehaviour
         sessionLogger.LogStudyEnd();
 
         TimeOverPopup.SetActive(true);
-        yield return new WaitForSeconds(3.5f);
+        yield return new WaitForSeconds(4.5f);
         TimeOverPopup.SetActive(false);
 
         ControllerInstructions2Panel.SetActive(true);

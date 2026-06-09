@@ -69,10 +69,10 @@ public class MicrophoneRecorder : MonoBehaviour
 
         int lastSample = Microphone.GetPosition(activeMic);
         Microphone.End(activeMic);
-
-        if (lastSample <= 0)
+        float recordingDuration = (float)lastSample / (float)sampleRate;
+        if (lastSample <= 0|| recordingDuration < 1f)
         {
-            Debug.LogWarning("No Audio recorded");
+            Debug.LogWarning("Recording too short.");
             return;
         }
 

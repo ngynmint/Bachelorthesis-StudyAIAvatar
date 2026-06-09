@@ -2881,8 +2881,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Tip: Use the four-step analysis to address the changes in quantity and
-    price seperately.'
+  m_text: "\t"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2948,7 +2947,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 3.8823214, y: 6.6489844, z: 6.4238143, w: -5.844899}
+  m_margin: {x: 3.8823214, y: 6.2026362, z: 6.4238143, w: -5.844899}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -3509,7 +3508,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionLogger
   participantID: '01 '
-  variableTested: tutee
+  variableTested: control
   avatarTransform: {fileID: 186636646}
 --- !u!4 &1571387771
 Transform:
@@ -3633,7 +3632,7 @@ MonoBehaviour:
   startLearningLockDuration: 5
   continueLockDuration: 8
   startInteractionLockDuration: 25
-  studyDuration: 40
+  studyDuration: 5
 --- !u!4 &1661713563
 Transform:
   m_ObjectHideFlags: 0

@@ -68,7 +68,6 @@ public class AvatarAnimationController : MonoBehaviour
     private void WhenNextEyeDirection()
     {
         eyeDirectionTimer = Random.Range(minInterval, maxInterval);
-        Debug.Log($"[EyeDirection] Next direction in {eyeDirectionTimer:F1}s");
     }
     
     private void StartTalking()
