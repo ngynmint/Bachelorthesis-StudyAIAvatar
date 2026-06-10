@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityPdfViewer;
-
 public class LearningMaterialController : MonoBehaviour
 {
     public GameObject learningMaterialWindow;
@@ -18,7 +17,9 @@ public class LearningMaterialController : MonoBehaviour
     {
         windowOpen = true;
         if (pdfViewer != null)
+        {
             pdfViewer.LoadPDF();
+        }   
     }
 
     void Update()
@@ -81,6 +82,26 @@ public class LearningMaterialController : MonoBehaviour
             sessionLogger.LogMaterialClosed();
             Debug.Log("[LearningMaterial] Window closed");
         }
+    }
+    private int GetCurrentPage()
+    {
+        var nav = typeof(PdfViewerUI)
+            .GetField("navigator", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            .GetValue(pdfViewer);
+        return (int)nav.GetType().GetProperty("CurrentPage").GetValue(nav);
+    }
+    public void NextPage()
+    {
+        if (pdfViewer == null) return;
+        pdfViewer.NextPage();
+        sessionLogger.LogMaterialPage(GetCurrentPage());
+    }
+
+    public void PreviousPage()
+    {
+        if (pdfViewer == null) return;
+        pdfViewer.PreviousPage();
+        sessionLogger.LogMaterialPage(GetCurrentPage());
     }
 
     public void LockInteraction(bool locked)

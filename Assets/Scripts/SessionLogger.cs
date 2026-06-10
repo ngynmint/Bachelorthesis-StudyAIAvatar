@@ -181,4 +181,9 @@ public class SessionLogger : MonoBehaviour
         materialOpen = false;
         LogEvent("MATERIAL", "CLOSE");
     }
+
+    public void LogMaterialPage(int page)
+    {
+        LogEvent("MATERIAL_PAGE", page.ToString());
+    }
 }
