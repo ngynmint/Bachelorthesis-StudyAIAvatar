@@ -19,7 +19,7 @@ public class MicrophoneRecorder : MonoBehaviour
     {
         if (Microphone.devices.Length > 0)
         {
-            //activeMic = Microphone.devices[0];
+            activeMic = Microphone.devices[0];
             Debug.Log($"Using microphone: {activeMic}");
         }
         else

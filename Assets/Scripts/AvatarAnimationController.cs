@@ -93,4 +93,19 @@ public class AvatarAnimationController : MonoBehaviour
         animator.SetBool("UseOtherAnimation", false);
         Debug.Log("[Anim] StopTalking");
     }
+    private float thinkingStartTime = -1f;
+    public void SetThinking(bool thinking)
+    {
+        if (thinking)
+        {
+            animator.SetTrigger("StartThinking");
+            Debug.Log("[Anim] START thinking");
+        }
+        else
+        {
+            animator.SetTrigger("StopThinking");
+            thinkingStartTime = -1f;
+            Debug.Log("[Anim] STOP thinking");
+        }
+    }
 }

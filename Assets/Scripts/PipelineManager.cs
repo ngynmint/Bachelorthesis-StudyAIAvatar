@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NativeWebSocket;
 using UnityEngine.XR;
+using UnityEngine.InputSystem;
 
 public class PipelineManager : MonoBehaviour
 {
@@ -38,7 +39,7 @@ public class PipelineManager : MonoBehaviour
     public float startInteractionLockDuration = 4f;
 
     public float studyDuration = 900f;
-
+    public AvatarAnimationController avatarAnimationController;
     private WebSocket websocket;
     private string lastUserText = "";
     private float lastRecordingDuration = 0f;
@@ -99,7 +100,7 @@ public class PipelineManager : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
         #if !UNITY_WEBGL || UNITY_EDITOR
                 websocket?.DispatchMessageQueue();
         #endif
@@ -113,11 +114,14 @@ public class PipelineManager : MonoBehaviour
     }
     private void HandleKeyboardPanelRecovery()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
-            RecoverToPanel(1); //ControllerInstructions1
-        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
-            RecoverToPanel(2); //ControllerInstructions2
-        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+        var kb = Keyboard.current;
+        if (kb == null) return;
+
+        if (kb.digit1Key.wasPressedThisFrame || kb.numpad1Key.wasPressedThisFrame)
+            RecoverToPanel(1);
+        else if (kb.digit2Key.wasPressedThisFrame || kb.numpad2Key.wasPressedThisFrame)
+            RecoverToPanel(2);
+        else if (kb.digit3Key.wasPressedThisFrame || kb.numpad3Key.wasPressedThisFrame)
             RecoverToPanel(3);
     }
 
@@ -172,45 +176,47 @@ public class PipelineManager : MonoBehaviour
         onUnlocked?.Invoke();
     }
 
-    private bool IsAnyButtonPressed(InputDevice device)
-    {
-        if (device.TryGetFeatureValue(CommonUsages.trigger, out float triggerVal) && triggerVal > 0.7f)
+    private bool IsAnyButtonPressed(UnityEngine.XR.InputDevice device)
+    {   
+        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+        return true;
+        if (device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.trigger, out float triggerVal) && triggerVal > 0.7f)
             return true;
 
         //if (device.TryGetFeatureValue(CommonUsages.grip, out float gripVal) && gripVal > 0.7f)
             //return true;
 
-        device.TryGetFeatureValue(CommonUsages.primaryTouch, out bool primaryTouched);
-        device.TryGetFeatureValue(CommonUsages.secondaryTouch, out bool secondaryTouched);
+        device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primaryTouch, out bool primaryTouched);
+        device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.secondaryTouch, out bool secondaryTouched);
 
-        if (GetBool(device, CommonUsages.primaryButton) && !primaryTouched)
+        if (GetBool(device, UnityEngine.XR.CommonUsages.primaryButton) && !primaryTouched)
             return true;
 
-        if (GetBool(device, CommonUsages.secondaryButton) && !secondaryTouched)
+        if (GetBool(device, UnityEngine.XR.CommonUsages.secondaryButton) && !secondaryTouched)
             return true;
 
-        if (GetBool(device, CommonUsages.primary2DAxisClick))
+        if (GetBool(device, UnityEngine.XR.CommonUsages.primary2DAxisClick))
             return true;
 
-        if (GetBool(device, CommonUsages.menuButton))
+        if (GetBool(device, UnityEngine.XR.CommonUsages.menuButton))
             return true;
 
         return false;
     }
 
-    private bool GetBool(InputDevice device, InputFeatureUsage<bool> usage)
+    private bool GetBool(UnityEngine.XR.InputDevice device, InputFeatureUsage<bool> usage)
     {
         return device.TryGetFeatureValue(usage, out bool value) && value;
     }
 
     private bool AnyControllerButtonPressed()
     {
-        if (Input.anyKeyDown) return true;
 
-        InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-        InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-
-        return IsAnyButtonPressed(leftHand) || IsAnyButtonPressed(rightHand);
+        UnityEngine.XR.InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        UnityEngine.XR.InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        return (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame) ||
+           IsAnyButtonPressed(leftHand) ||
+           IsAnyButtonPressed(rightHand);
     }
 
     private IEnumerator HandleButtonPress()
@@ -352,6 +358,7 @@ public class PipelineManager : MonoBehaviour
         clip.GetData(samples, 0);
 
         byte[] wavBytes = FloatsToWav(samples, clip.channels, clip.frequency);
+        avatarAnimationController?.SetThinking(true);
         await websocket.Send(wavBytes);
         Debug.Log($"Audio sent! {wavBytes.Length} bytes");
     }
@@ -389,6 +396,12 @@ public class PipelineManager : MonoBehaviour
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
+        if (interactionCount >=1)
+        {
+            avatarAnimationController?.SetThinking(false);
+            yield return new WaitForSeconds(2f);
+        }
+    
         avatarAudioSource.Play();
         sessionLogger.LogAISpeechStart();
 

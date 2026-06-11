@@ -1057,6 +1057,10 @@ PrefabInstance:
         clip '2026_4_16_3_44_18'\n\tFrom animation clip 'LookingDown'\n\tFrom animation
         clip 'LookingLeft'\n\tFrom animation clip 'LookingRight'"
       objectReference: {fileID: 0}
+    - target: {fileID: 6399621025233709716, guid: 7413e792790eefd46b0289c3a1b500ee, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2369,7 +2373,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.386
+      value: 0.294
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3229,7 +3233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.509
+      value: -0.528
       objectReference: {fileID: 0}
     - target: {fileID: 2974669907686199774, guid: 079f891cce535fe438c0c8335ba91ca8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3365,6 +3369,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PDFJoystickNav
   pdfViewer: {fileID: 1515435403}
+  learningMaterial: {fileID: 661453927}
 --- !u!114 &1515435403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3631,9 +3636,10 @@ MonoBehaviour:
   ContinueButton: {fileID: 1714845779}
   StartInteractionButton: {fileID: 2056052354}
   startLearningLockDuration: 5
-  continueLockDuration: 2
+  continueLockDuration: 8
   startInteractionLockDuration: 2
   studyDuration: 4
+  avatarAnimationController: {fileID: 1713884065}
 --- !u!4 &1661713563
 Transform:
   m_ObjectHideFlags: 0
