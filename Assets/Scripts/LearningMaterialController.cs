@@ -9,6 +9,7 @@ public class LearningMaterialController : MonoBehaviour
     private Vector3 handStartPosition;
     private bool handInZone = false;
     private bool windowOpen = false;
+    public bool IsOpen => windowOpen;
     private bool gestureUsed = false; 
     private bool interactionLocked = false;
 
@@ -115,5 +116,13 @@ public class LearningMaterialController : MonoBehaviour
         Collider col = GetComponent<Collider>();
         if (col != null)
             Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+    }
+    public void ForceClose()
+    {
+        if (!windowOpen) return;
+        windowOpen = false;
+        learningMaterialWindow.SetActive(false);
+        sessionLogger.LogMaterialClosed();
+        Debug.Log("[LearningMaterial] force closed");
     }
 }

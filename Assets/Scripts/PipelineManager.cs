@@ -358,6 +358,7 @@ public class PipelineManager : MonoBehaviour
         clip.GetData(samples, 0);
 
         byte[] wavBytes = FloatsToWav(samples, clip.channels, clip.frequency);
+        learningMaterialController?.LockInteraction(true);
         avatarAnimationController?.SetThinking(true);
         await websocket.Send(wavBytes);
         Debug.Log($"Audio sent! {wavBytes.Length} bytes");
@@ -401,7 +402,7 @@ public class PipelineManager : MonoBehaviour
             avatarAnimationController?.SetThinking(false);
             yield return new WaitForSeconds(2f);
         }
-    
+        learningMaterialController?.ForceClose();
         avatarAudioSource.Play();
         sessionLogger.LogAISpeechStart();
 
@@ -424,6 +425,7 @@ public class PipelineManager : MonoBehaviour
         else
         {
             recorder.isLocked = false;
+            learningMaterialController?.LockInteraction(false);
         }
     }
 

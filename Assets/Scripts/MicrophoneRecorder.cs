@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.XR;
 using System.Collections.Generic;
+using System.Collections;
 
 public class MicrophoneRecorder : MonoBehaviour
 {
     public System.Action<AudioClip> OnAudioReady; 
+    public LearningMaterialController learningMaterialController;
     private AudioClip recordedClip;
     private bool isRecording = false;
     private int sampleRate = 44100;
@@ -12,14 +14,16 @@ public class MicrophoneRecorder : MonoBehaviour
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
     public SessionLogger sessionLogger;
+    public GameObject pdfIsStillOpenPopup;
     private string activeMic = "Headset Microphone (Oculus Virtual Audio Device)";  //Headset Microphone (Oculus Virtual Audio Device)
     public bool isLocked = false;     
+    public PipelineManager pipelineManager;
 
     void Start()
     {
         if (Microphone.devices.Length > 0)
         {
-            activeMic = Microphone.devices[0];
+            //activeMic = Microphone.devices[0];
             Debug.Log($"Using microphone: {activeMic}");
         }
         else
@@ -41,18 +45,28 @@ public class MicrophoneRecorder : MonoBehaviour
 
         if (triggerPressed && !isRecording)
         {
-            StartRecording();
+            if (learningMaterialController != null && learningMaterialController.IsOpen)
+            {
+                StartCoroutine(ShowPdfWarning());
+            }
+            else
+            {
+                StartRecording();
+            }
         }
         else if (!triggerPressed && isRecording)
         {
             StopRecording();
         }
+        
     }
+
 
     private void StartRecording()
     {
         if (isRecording) return;
         isRecording = true;
+        learningMaterialController?.LockInteraction(true);
         recordedClip = Microphone.Start(activeMic, false, maxRecordingSeconds, sampleRate);
         if (OnRecordingStarted != null)
         {
@@ -94,6 +108,16 @@ public class MicrophoneRecorder : MonoBehaviour
         if (OnAudioReady != null)
         {
             OnAudioReady(recordedClip);
+        }
+    }
+
+    private IEnumerator ShowPdfWarning()
+    {
+        if (pdfIsStillOpenPopup  != null)
+        {
+            pdfIsStillOpenPopup .SetActive(true);
+            yield return new WaitForSeconds(3f);
+            pdfIsStillOpenPopup .SetActive(false);
         }
     }
 }

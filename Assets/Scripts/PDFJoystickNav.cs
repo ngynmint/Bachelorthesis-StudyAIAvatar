@@ -28,9 +28,9 @@ public class PDFJoystickNav : MonoBehaviour
 
         if (!axisCooledDown) return;
 
-        if (combinedX < -0.5f)
+        if (combinedX > 0.5f)
             learningMaterial.NextPage();
-        else if (combinedX > 0.5f)
+        else if (combinedX < -0.5f)
             learningMaterial.PreviousPage();
 
         axisCooledDown = false;
