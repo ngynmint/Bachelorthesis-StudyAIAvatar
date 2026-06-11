@@ -3637,8 +3637,8 @@ MonoBehaviour:
   StartInteractionButton: {fileID: 2056052354}
   startLearningLockDuration: 5
   continueLockDuration: 8
-  startInteractionLockDuration: 2
-  studyDuration: 4
+  startInteractionLockDuration: 25
+  studyDuration: 900
   avatarAnimationController: {fileID: 1713884065}
 --- !u!4 &1661713563
 Transform:
