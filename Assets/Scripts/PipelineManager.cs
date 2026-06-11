@@ -48,6 +48,7 @@ public class PipelineManager : MonoBehaviour
     private int interactionCount = 0;
     private const int MAX_INTERACTIONS = 6;
     //private bool sessionEnded = false;
+    public bool IsInteractionStage => currentStage == FlowStage.Interaction;
 
     private enum FlowStage { Instructions, Studying, ControllerInstructions2, TaskGoal, Interaction }
     private FlowStage currentStage = FlowStage.Instructions;
@@ -174,6 +175,19 @@ public class PipelineManager : MonoBehaviour
         if (label != null) label.SetActive(true);
         panelLocked = false;
         onUnlocked?.Invoke();
+    }
+
+    public void ShowLockedPopup(GameObject popup)
+    {
+        StartCoroutine(ShowPopupCoroutine(popup));  
+    }
+
+    private IEnumerator ShowPopupCoroutine(GameObject popup)
+    {
+        if (popup == null) yield break;
+        popup.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        popup.SetActive(false);
     }
 
     private bool IsAnyButtonPressed(UnityEngine.XR.InputDevice device)
@@ -397,6 +411,7 @@ public class PipelineManager : MonoBehaviour
         clip.SetData(samples, 0);
         avatarAudioSource.clip = clip;
         recorder.isLocked = true;
+        learningMaterialController?.LockInteraction(true);
         if (interactionCount >=1)
         {
             avatarAnimationController?.SetThinking(false);

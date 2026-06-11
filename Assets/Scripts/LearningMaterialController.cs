@@ -12,7 +12,8 @@ public class LearningMaterialController : MonoBehaviour
     public bool IsOpen => windowOpen;
     private bool gestureUsed = false; 
     private bool interactionLocked = false;
-
+    public GameObject lockedPopup;
+    public PipelineManager pipelineManager;
 
     private void Start()
     {
@@ -33,7 +34,6 @@ public class LearningMaterialController : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (interactionLocked) return;
         Debug.Log("[LearningMaterial] OnTriggerEnter hit by: " + other.gameObject.name + " | Tag: " + other.tag);
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand"))
         {
@@ -49,7 +49,6 @@ public class LearningMaterialController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (interactionLocked) return;
         if (!handInZone || gestureUsed) return;
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand")) return;
 
@@ -58,7 +57,14 @@ public class LearningMaterialController : MonoBehaviour
         if (distance >= reachThreshold)
         {
             gestureUsed = true;
-            ToggleWindow();
+            if (interactionLocked && pipelineManager != null && pipelineManager.IsInteractionStage)
+            {
+                pipelineManager.ShowLockedPopup(lockedPopup);
+            }
+            else
+            {
+                ToggleWindow();
+            }
         }
     }
 
