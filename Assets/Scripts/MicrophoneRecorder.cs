@@ -9,7 +9,7 @@ public class MicrophoneRecorder : MonoBehaviour
     public LearningMaterialController learningMaterialController;
     private AudioClip recordedClip;
     private bool isRecording = false;
-    private int sampleRate = 44100;
+    private int sampleRate = 16000;
     private int maxRecordingSeconds = 300;
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
