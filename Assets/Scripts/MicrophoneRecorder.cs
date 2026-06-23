@@ -10,7 +10,7 @@ public class MicrophoneRecorder : MonoBehaviour
     private AudioClip recordedClip;
     private bool isRecording = false;
     private int sampleRate = 44100;
-    private int maxRecordingSeconds = 60;
+    private int maxRecordingSeconds = 300;
     public System.Action OnRecordingStarted;
     public System.Action OnRecordingStopped;
     public SessionLogger sessionLogger;
