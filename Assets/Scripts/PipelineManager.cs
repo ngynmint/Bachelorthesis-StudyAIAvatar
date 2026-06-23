@@ -129,6 +129,8 @@ public class PipelineManager : MonoBehaviour
     private void RecoverToPanel(int panelNumber)
     {
         StopAllCoroutines();
+        avatarAudioSource.Stop();
+        interactionCount = 0;
         waitingForButtonPress = false;
         panelLocked = true;
  
@@ -148,6 +150,7 @@ public class PipelineManager : MonoBehaviour
             case 1:
                 sessionLogger.LogPanelOpen("ControllerInstructions1");
                 ControllerInstructions1Panel.SetActive(true);
+                learningMaterialController?.LockInteraction(true);
                 currentStage = FlowStage.Instructions;
                 StartCoroutine(LockThenReveal(StartLearningButton, startLearningLockDuration, () => { waitingForButtonPress = true; }));
                 break;
@@ -155,12 +158,14 @@ public class PipelineManager : MonoBehaviour
             case 2:
                 sessionLogger.LogPanelOpen("ControllerInstructions2");
                 ControllerInstructions2Panel.SetActive(true);
+                learningMaterialController?.LockInteraction(true);
                 currentStage = FlowStage.ControllerInstructions2;
                 StartCoroutine(LockThenReveal(ContinueButton, continueLockDuration, () => { waitingForButtonPress = true; }));
                 break;
  
             case 3:
                 sessionLogger.LogPanelOpen("TaskGoal");
+                learningMaterialController?.LockInteraction(true);
                 TaskGoalPanel.SetActive(true);
                 currentStage = FlowStage.TaskGoal;
                 StartCoroutine(LockThenReveal(StartInteractionButton, startInteractionLockDuration, () => { waitingForButtonPress = true; }));
@@ -252,6 +257,7 @@ public class PipelineManager : MonoBehaviour
                 ControllerInstructions2Panel.SetActive(false);
                 sessionLogger.LogPanelClose("ControllerInstructions2");
                 if (ContinueButton != null) ContinueButton.SetActive(false);
+                learningMaterialController?.LockInteraction(true);
                 TaskGoalPanel.SetActive(true);
                 sessionLogger.LogPanelOpen("TaskGoal");
                 currentStage = FlowStage.TaskGoal;
@@ -374,6 +380,7 @@ public class PipelineManager : MonoBehaviour
         byte[] wavBytes = FloatsToWav(samples, clip.channels, clip.frequency);
         learningMaterialController?.LockInteraction(true);
         avatarAnimationController?.SetThinking(true);
+        recorder.isLocked = true;
         await websocket.Send(wavBytes);
         Debug.Log($"Audio sent! {wavBytes.Length} bytes");
     }

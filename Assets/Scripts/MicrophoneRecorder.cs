@@ -39,9 +39,9 @@ public class MicrophoneRecorder : MonoBehaviour
         InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
 
         bool rightTrigger = rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out rightTrigger) && rightTrigger;
-        bool leftTrigger = leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out leftTrigger) && leftTrigger;
+        //bool leftTrigger = leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out leftTrigger) && leftTrigger;
 
-        bool triggerPressed = rightTrigger || leftTrigger || Input.GetKey(KeyCode.Space);
+        bool triggerPressed = rightTrigger || Input.GetKey(KeyCode.Space);
 
         if (triggerPressed && !isRecording)
         {
@@ -104,7 +104,7 @@ public class MicrophoneRecorder : MonoBehaviour
 
         sessionLogger.LogUserSpeechEnd();
         Debug.Log($"Recording stopped");
-        
+        isLocked = true;
         if (OnAudioReady != null)
         {
             OnAudioReady(recordedClip);

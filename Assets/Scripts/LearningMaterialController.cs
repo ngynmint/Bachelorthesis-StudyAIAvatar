@@ -57,9 +57,10 @@ public class LearningMaterialController : MonoBehaviour
         if (distance >= reachThreshold)
         {
             gestureUsed = true;
-            if (interactionLocked && pipelineManager != null && pipelineManager.IsInteractionStage)
+            if (interactionLocked)
             {
-                pipelineManager.ShowLockedPopup(lockedPopup);
+                if (pipelineManager != null && pipelineManager.IsInteractionStage)
+                    pipelineManager.ShowLockedPopup(lockedPopup);
             }
             else
             {
