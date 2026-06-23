@@ -2382,7 +2382,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 24533e0d8b7887543a9131b71e316cf2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ec70884e1fd060b4eb25452acf0e56bb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4181,8 +4181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7635aadae690e584cba13ea3063f550a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionLogger
-  participantID: 03
-  variableTested: challenger
+  participantID: 04
+  variableTested: control
   avatarTransform: {fileID: 186636646}
 --- !u!4 &1571387771
 Transform:
