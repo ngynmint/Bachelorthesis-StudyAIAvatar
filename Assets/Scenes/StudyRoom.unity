@@ -5251,9 +5251,9 @@ MonoBehaviour:
     U.S. Postal Service is facing significant challenges:\n- Rising Compensation:
     Postal workers' wages consistently increase due to cost-of-living adjustments,
     affecting operational costs.\n- Digital Shift: More people are switching from
-    traditional mail (\"snail mail\") to digital forms fo communication such as email,
-    text, Facebook, and Twitter.\n\nQuestion: What are the effects on the quantitiy
-    of postal services demanded and the price of postal services, and why?"
+    traditional mail (\"snail mail\") to digital forms for communication such as
+    email, text, Facebook, and Twitter.\n\nQuestion: What are the effects on the
+    quantity of postal services demanded and the price of postal services, and why?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
