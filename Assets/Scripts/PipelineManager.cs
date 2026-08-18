@@ -7,13 +7,10 @@
 
     public class PipelineManager : MonoBehaviour
     {
-        [Header("Components")]
         public MicrophoneRecorder recorder;
         public AudioSource avatarAudioSource;
         public SessionLogger sessionLogger;
         public LearningMaterialController learningMaterialController;
-
-        [Header("Avatar")]
         public GameObject avatarRoot;
         public float delayAfterFadeBeforeSpeak = 1.5f;
         
@@ -25,26 +22,19 @@
         public GameObject TaskGoalPanel;           
         public GameObject InteractionOverPopup;
         public GameObject taskBoard;
-        
-        [Header("Blink Transition")]
         public CanvasGroup fadingCanvas;
         public float blinkFadeDuration = 0.4f;
 
-        [Header("Proceed Buttons")]
         public GameObject StartLearningButton;
         public GameObject ContinueButton;
         public GameObject StartInteractionButton;
         public float startLearningLockDuration = 4f;
         public float continueLockDuration = 4f;
         public float startInteractionLockDuration = 4f;
-
         public float studyDuration = 900f;
         public AvatarAnimationController avatarAnimationController;
         private WebSocket websocket;
         private string lastUserText = "";
-        private float lastRecordingDuration = 0f;
-        private float userStartMs;
-        private float aiStartMs;
         private int interactionCount = 0;
         private const int MAX_INTERACTIONS = 6;
         //private bool sessionEnded = false;
@@ -66,9 +56,9 @@
             sessionLogger.LogPanelOpen("ControllerInstructions1");
             StartCoroutine(LockThenReveal(StartLearningButton, startLearningLockDuration, () => waitingForButtonPress = true));
             websocket = new WebSocket("ws://localhost:8765");
-            websocket.OnOpen += () => Debug.Log("Server connected");
+            websocket.OnOpen += () => Debug.Log("server connected");
             websocket.OnError += (e) => Debug.LogError($"WebSocket Error: {e}");
-            websocket.OnClose += (e) => Debug.Log("Connection closed");
+            websocket.OnClose += (e) => Debug.Log("connection closed");
 
             bool waitingForText = true;
             string pendingAiText = "";
@@ -81,8 +71,8 @@
                     var response = JsonUtility.FromJson<AIResponse>(json);
                     pendingAiText = response.text;
                     lastUserText = response.stt_text;
-                    Debug.Log("AI Text: " + response.text);
-                    Debug.Log("User Text: " + response.stt_text);
+                    Debug.Log("AI text: " + response.text);
+                    Debug.Log("user text: " + response.stt_text);
 
                     if (lastUserText != null && lastUserText.Trim().Length > 0)
                     {
@@ -130,6 +120,7 @@
         {
             StopAllCoroutines();
             avatarAudioSource.Stop();
+            recorder.isLocked = true;
             interactionCount = 0;
             waitingForButtonPress = false;
             panelLocked = true;
@@ -303,7 +294,6 @@
             if (websocket.State == WebSocketState.Closed || 
             websocket.State == WebSocketState.Closing)
             {
-                Debug.Log("WebSocket closed, reconnecting...");
                 connectToServer();
             }
 
@@ -316,7 +306,6 @@
 
             if (websocket.State != WebSocketState.Open)
             {
-                Debug.LogError("WebSocket failed to open before SendAgentType");
                 yield break;
             }
 
@@ -353,14 +342,14 @@
             string agentName = sessionLogger.variableTested.Trim().ToLower();
             string configJson = "{\"agent_type\": \"" + agentName + "\"}";
             websocket.Send(System.Text.Encoding.UTF8.GetBytes(configJson));
-            Debug.Log("Sent agent type: " + agentName);
+            Debug.Log("sent agent type: " + agentName);
         }
 
         //private async void SendEndPrompt()
         //{
         //    string endJson = "{\"end_prompt\": true}";
         //    await websocket.Send(System.Text.Encoding.UTF8.GetBytes(endJson));
-        //    Debug.Log("Sent end prompt");
+        //    Debug.Log("sent end prompt");
         //}
 
         private void OnAudioReady(AudioClip clip)
@@ -371,9 +360,6 @@
         private async void SendAudioToServer(AudioClip clip)
         {
             if (websocket.State != WebSocketState.Open) return;
-
-            Debug.Log($"Send Audio: {clip.samples} samples, {clip.channels} channels, {clip.frequency}Hz");
-
             float[] samples = new float[clip.samples * clip.channels];
             clip.GetData(samples, 0);
 
@@ -382,7 +368,7 @@
             avatarAnimationController?.SetThinking(true);
             recorder.isLocked = true;
             await websocket.Send(wavBytes);
-            Debug.Log($"Audio sent! {wavBytes.Length} bytes");
+            Debug.Log($"audio sent");
         }
 
         private byte[] FloatsToWav(float[] samples, int channels, int frequency)
@@ -431,7 +417,7 @@
             sessionLogger.LogAISpeechEnd();
 
             interactionCount++;
-            Debug.Log($"[Pipeline] Interaction {interactionCount}/{MAX_INTERACTIONS} complete");
+            Debug.Log($"{interactionCount}/{MAX_INTERACTIONS} done");
 
             if (interactionCount >= MAX_INTERACTIONS)
             {
@@ -440,7 +426,7 @@
                 recorder.isLocked = true;
                 if (InteractionOverPopup != null)
                     InteractionOverPopup.SetActive(true);
-                Debug.Log("Session ended. Locking recorder.");
+                Debug.Log("session end and lock recorder");
             }
             else
             {

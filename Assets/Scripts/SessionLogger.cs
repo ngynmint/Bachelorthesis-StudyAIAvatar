@@ -5,7 +5,6 @@ using System.Globalization;
 
 public class SessionLogger : MonoBehaviour
 {
-    [Header("Settings")]
     public string participantID = " ";
     public string variableTested= " ";
     public Transform avatarTransform;
@@ -30,10 +29,8 @@ public class SessionLogger : MonoBehaviour
         File.WriteAllText(logFilePath, "unix_time;time_ms;variable;value\n");
         LogEvent("PARTICIPANT_ID", participantID);
         LogEvent("VARIABLE_TESTED", variableTested);
-        Debug.Log("[Logger] CSV Log @: " + logFilePath);
+        Debug.Log("CSV Log @: " + logFilePath);
     }
-
-    //FORMAT THINGS
     private string FormatFloat(float value) => value.ToString("F3", new CultureInfo("de-DE"));
     private float GetTimeNow() => Time.time - sessionStartTime;
 
@@ -47,7 +44,6 @@ public class SessionLogger : MonoBehaviour
         return value;
     }
 
-    //LOGGING
     private void LogEvent(string variable, string value = "")
     {
         double unixTime = sessionStartUnix + GetTimeNow();
@@ -143,7 +139,6 @@ public class SessionLogger : MonoBehaviour
         LogEvent("AI_SPEECH", aiText);
     }
 
-    //GAZE
     private bool IsGazing()
     {
         if (avatarTransform == null) return false;
@@ -168,8 +163,7 @@ public class SessionLogger : MonoBehaviour
         }
         return true;
     }
-
-    //MATERIAL 
+ 
     public void LogMaterialOpened()
     {
         materialOpen = true;

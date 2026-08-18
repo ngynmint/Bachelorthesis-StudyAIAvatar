@@ -2,16 +2,14 @@ using UnityEngine;
 
 public class AvatarAnimationController : MonoBehaviour
 {
-    [Header("Components")]
     public Animator animator;
     public AudioSource avatarAudioSource;
-
-    [Header("Eye Direction Settings")]
     [SerializeField] private float minInterval = 5f;
     [SerializeField] private float maxInterval = 10f;
     private bool isTalking = false;
     private string lastLoggedState = "";
     private float eyeDirectionTimer;
+    private float thinkingStartTime = -1f;
     private static readonly string[] eyeDirectionTriggers = { "PlayLeft", "PlayRight", "PlayDown" };
     
     void Start()
@@ -46,7 +44,7 @@ public class AvatarAnimationController : MonoBehaviour
         }
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(1);
-        string currentState = "loading...";
+        string currentState = "pending";
 
         if (stateInfo.IsName("Idle")) {
             currentState = "IDLE";
@@ -93,7 +91,6 @@ public class AvatarAnimationController : MonoBehaviour
         animator.SetBool("UseOtherAnimation", false);
         Debug.Log("[Anim] StopTalking");
     }
-    private float thinkingStartTime = -1f;
     public void SetThinking(bool thinking)
     {
         if (thinking)

@@ -24,11 +24,11 @@ public class MicrophoneRecorder : MonoBehaviour
         if (Microphone.devices.Length > 0)
         {
             //activeMic = Microphone.devices[0];
-            Debug.Log($"Using microphone: {activeMic}");
+            Debug.Log($"{activeMic}");
         }
         else
         {
-            Debug.LogError("No microphone detected!");
+            Debug.LogError("mic not found");
         }
     }
     void Update()
@@ -73,7 +73,7 @@ public class MicrophoneRecorder : MonoBehaviour
             OnRecordingStarted();
         }
         sessionLogger.LogUserSpeechStart();
-        Debug.Log($"Recording started ({activeMic})");
+        Debug.Log($"recording started ({activeMic})");
     }
 
     private void StopRecording()
@@ -86,7 +86,7 @@ public class MicrophoneRecorder : MonoBehaviour
         float recordingDuration = (float)lastSample / (float)sampleRate;
         if (lastSample <= 0|| recordingDuration < 1f)
         {
-            Debug.LogWarning("Recording too short.");
+            Debug.LogWarning("recording too short.");
             return;
         }
 
@@ -103,7 +103,7 @@ public class MicrophoneRecorder : MonoBehaviour
         }
 
         sessionLogger.LogUserSpeechEnd();
-        Debug.Log($"Recording stopped");
+        Debug.Log($"recording stopped");
         isLocked = true;
         if (OnAudioReady != null)
         {

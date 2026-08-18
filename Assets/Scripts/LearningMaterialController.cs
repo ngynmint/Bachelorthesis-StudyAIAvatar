@@ -34,17 +34,15 @@ public class LearningMaterialController : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("[LearningMaterial] OnTriggerEnter hit by: " + other.gameObject.name + " | Tag: " + other.tag);
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand"))
         {
-            Debug.Log("[LearningMaterial] Ignored — wrong tag");
             return;
         }
 
         handInZone = true;
         gestureUsed = false;
         handStartPosition = other.transform.position;
-        Debug.Log("[LearningMaterial    ] Hand entered zone");
+        Debug.Log("learningmat hand enter");
     }
 
     private void OnTriggerStay(Collider other)
@@ -73,7 +71,7 @@ public class LearningMaterialController : MonoBehaviour
     {
         if (!other.CompareTag("LeftHand") && !other.CompareTag("RightHand")) return;
         handInZone = false;
-        Debug.Log("[LearningMaterial] Hand left zone");
+        Debug.Log("learningmat hand gone");
     }
 
     private void ToggleWindow()
@@ -84,11 +82,11 @@ public class LearningMaterialController : MonoBehaviour
         {
             pdfViewer.LoadPDF();
             sessionLogger.LogMaterialOpened();
-            Debug.Log("[LearningMaterial] Window opened, PDF loading...");
+            Debug.Log("learningmat window opened, loading pdf");
         }
         else{
             sessionLogger.LogMaterialClosed();
-            Debug.Log("[LearningMaterial] Window closed");
+            Debug.Log("learningmat window closed");
         }
     }
     private int GetCurrentPage()
@@ -130,6 +128,6 @@ public class LearningMaterialController : MonoBehaviour
         windowOpen = false;
         learningMaterialWindow.SetActive(false);
         sessionLogger.LogMaterialClosed();
-        Debug.Log("[LearningMaterial] force closed");
+        Debug.Log("learningmat close");
     }
 }

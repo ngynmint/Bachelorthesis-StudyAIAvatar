@@ -5,7 +5,7 @@ using UnityPdfViewer;
 public class PDFJoystickNav : MonoBehaviour
 {
     public PdfViewerUI pdfViewer;
-    public LearningMaterialController learningMaterial; // assign in Inspector, remove pdfViewer ref
+    public LearningMaterialController learningMaterial;
     private bool axisCooledDown = true;
 
     void Update()

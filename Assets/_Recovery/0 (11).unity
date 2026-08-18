@@ -1521,7 +1521,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1022363015582904558, guid: 7413e792790eefd46b0289c3a1b500ee, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3
+      value: 0.34
       objectReference: {fileID: 0}
     - target: {fileID: 1022363015582904558, guid: 7413e792790eefd46b0289c3a1b500ee, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2888,7 +2888,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.245
+      value: 0.294
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4181,8 +4181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7635aadae690e584cba13ea3063f550a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionLogger
-  participantID: 21
-  variableTested: peer
+  participantID: 10
+  variableTested: challenger
   avatarTransform: {fileID: 186636646}
 --- !u!4 &1571387771
 Transform:
@@ -4306,7 +4306,7 @@ MonoBehaviour:
   startLearningLockDuration: 5
   continueLockDuration: 8
   startInteractionLockDuration: 28
-  studyDuration: 900
+  studyDuration: 660
   avatarAnimationController: {fileID: 1713884065}
 --- !u!4 &1661713563
 Transform:
